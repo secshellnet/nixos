@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <title>Simple Upload</title>
+        <style> iframe { border: none } </style>
+    </head>
+    <body>
+        <h1>Simple Upload</h1>
+        <p>You can upload files using: <code>curl -T FILENAME -u USERNAME:PASSWORD https://<span id="domain">DOMAIN</span>/upload/PATH</code></p>
+        <form>
+            <label style="display: none">
+                <input type="file" multiple id="files">
+            </label>
+            <button id="btn">Upload files...</button>
+        </form>
+        <p>You can list and download files <a href="/data/">here</a>.</p>
+    </body>
+    <script>
+      const files = document.getElementById('files');
+      const btn = document.getElementById('btn');
+
+      document.getElementById('domain').innerText = document.location.host;
+
+      btn.addEventListener('click', event => {
+        event.preventDefault();
+        files.click();
+      });
+
+      files.addEventListener('change', () => {
+        btn.disabled = true;
+
+        /** @type {FileList} */
+        const fileList = files.files;
+        if (!fileList.length) {
+        files.value = null;
+        btn.disabled = false;
+        return;
+      }
+
+      let uploads = [];
+
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList.item(i);
+
+        uploads.push(fetch(`/upload/${file.name}`, {
+          method: 'PUT',
+          body: file
+        }));
+      }
+
+      Promise.all(uploads)
+        .then(() => {
+          files.value = null;
+          btn.disabled = false;
+          console.log("Upload finished");
+          window.location = "/data/"
+        })
+        .catch(error => {
+          files.value = null;
+          btn.disabled = false;
+          alert(`Error: ${error} (see console for more details)`);
+          console.error(error);
+        });
+      });
+    </script>
+</html>
