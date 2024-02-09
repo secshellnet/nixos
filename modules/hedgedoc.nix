@@ -57,7 +57,12 @@
       );
     };
 
+    imports = [
+      ./postgres.nix
+    ];
+
     services.postgresql = lib.mkIf config.secshell.hedgedoc.useLocalDatabase  {
+      enable = true;
       ensureDatabases = [ "hedgedoc" ];
     };
 

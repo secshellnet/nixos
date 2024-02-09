@@ -77,7 +77,14 @@
       "gitea/databasePassword".owner = "gitea";
     } // lib.optionalAttrs (config.secshell.gitea.smtp.hostname != null) { "gitea/smtpPassword".owner = "gitea"; });
 
-    services.postgresql.ensureDatabases = lib.mkIf config.secshell.gitea.useLocalDatabase ["gitea"];
+    imports = [
+      ./postgres.nix
+    ];
+
+    services.postgresql = lib.mkIf config.secshell.gitea.useLocalDatabase {
+      enable = true;
+      ensureDatabases = ["gitea"];
+    };
 
     services.gitea = {
       enable = true;
