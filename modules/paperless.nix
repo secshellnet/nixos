@@ -30,6 +30,10 @@
         default = "paperless";
       };
     };
+    adminUsername = lib.mkOption {
+      type = lib.types.str;
+      default = "secshelladmin";
+    };
   };
   config = lib.mkIf config.secshell.paperless.enable {
     sops = lib.mkIf (!config.secshell.paperless.useLocalDatabase) {
@@ -53,7 +57,7 @@
         PAPERLESS_URL = "https://${toString config.secshell.paperless.domain}";
         PAPERLESS_TIME_ZONE = "Europe/Berlin";
 
-        PAPERLESS_ADMIN_USER = "secshelladmin";
+        PAPERLESS_ADMIN_USER = config.secshell.paperless.adminUsername;
 
         PAPERLESS_OCR_USER_ARGS = builtins.toJSON {
           optimize = 1;
