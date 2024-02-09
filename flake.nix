@@ -5,6 +5,8 @@
       simple-upload = import ./modules/simple-upload.nix;
       nginx = import ./modules/nginx.nix;
       postgres = import ./modules/postgres.nix;
+      containers = import ./modules/containers.nix;
+      gitea = import ./modules/gitea.nix;
     };
   };
 }
