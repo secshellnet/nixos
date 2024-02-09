@@ -9,6 +9,7 @@
       gitea = import ./modules/gitea.nix;
       vaultwarden = import ./modules/vaultwarden.nix;
       netbox = import ./modules/netbox.nix;
+      keycloak = import ./modules/keycloak.nix;
     };
   };
 }

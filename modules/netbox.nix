@@ -60,8 +60,13 @@
       "netbox/databasePassword".owner = "netbox";
     });
 
+    imports = [
+      ./postgres.nix
+    ];
+
     services = {
       postgresql = lib.mkIf config.secshell.netbox.useLocalDatabase {
+        enable = true;
         ensureDatabases = [ "netbox" ];
       };
 
