@@ -3,11 +3,8 @@
 , pkgs
 , ...
 }: {
-  imports = [
-    ./postgres.nix
-  ];
-
   options.secshell.paperless = {
+    enable = lib.mkEnableOption "paperless";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "paperless.${toString config.networking.fqdn}";
@@ -34,7 +31,7 @@
       };
     };
   };
-  config = {
+  config = lib.mkIf config.secshell.paperless.enable {
     sops = lib.mkIf (!config.secshell.paperless.useLocalDatabase) {
       secrets."paperless/password" = {};
       secrets."paperless/databasePassword" = {};
@@ -88,19 +85,22 @@
       "paperless-scheduler".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
     };
 
-    services.nginx.virtualHosts.${toString config.secshell.paperless.domain} = {
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:${toString config.secshell.paperless.internal_port}";
-        proxyWebsockets = true;
-        extraConfig = ''
-          client_max_body_size 1G;
-        '';
-      };
-      serverName = toString config.secshell.paperless.domain;
+    services.nginx = {
+      enable = true;
+      virtualHosts.${toString config.secshell.paperless.domain} = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString config.secshell.paperless.internal_port}";
+          proxyWebsockets = true;
+          extraConfig = ''
+            client_max_body_size 1G;
+          '';
+        };
+        serverName = toString config.secshell.paperless.domain;
 
-      # use ACME DNS-01 challenge
-      useACMEHost = toString config.secshell.paperless.domain;
-      forceSSL = true;
+        # use ACME DNS-01 challenge
+        useACMEHost = toString config.secshell.paperless.domain;
+        forceSSL = true;
+      };
     };
 
     security.acme.certs."${toString config.secshell.paperless.domain}" = {};

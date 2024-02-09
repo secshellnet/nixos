@@ -2,11 +2,8 @@
 , lib
 , ...
 }: {
-  imports = [
-    ./postgres.nix
-  ];
-
   options.secshell.hedgedoc = {
+    enable = lib.mkEnableOption "hedgedoc";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "md.${toString config.networking.fqdn}";
@@ -47,7 +44,7 @@
       };
     };
   };
-  config = {
+  config = lib.mkIf config.secshell.hedgedoc.enable {
     sops = {
       secrets = {
         "hedgedoc/sessionSecret" = {};
@@ -109,16 +106,19 @@
       };
     };
 
-    services.nginx.virtualHosts.${toString config.secshell.hedgedoc.domain} = {
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:${toString config.secshell.hedgedoc.internal_port}";
-        proxyWebsockets = true;
-      };
-      serverName = toString config.secshell.hedgedoc.domain;
+    services.nginx = {
+      enable = true;
+      virtualHosts.${toString config.secshell.hedgedoc.domain} = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString config.secshell.hedgedoc.internal_port}";
+          proxyWebsockets = true;
+        };
+        serverName = toString config.secshell.hedgedoc.domain;
 
-      # use ACME DNS-01 challenge
-      useACMEHost = toString config.secshell.hedgedoc.domain;
-      forceSSL = true;
+        # use ACME DNS-01 challenge
+        useACMEHost = toString config.secshell.hedgedoc.domain;
+        forceSSL = true;
+      };
     };
 
     security.acme.certs."${toString config.secshell.hedgedoc.domain}" = {};

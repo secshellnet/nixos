@@ -3,11 +3,8 @@
 , pkgs
 , ...
 }: {
-  imports = [
-    ./postgres.nix
-  ];
-
   options.secshell.gitea = {
+    enable = lib.mkEnableOption "gitea";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "git.${toString config.networking.fqdn}";
@@ -76,7 +73,7 @@
       default = true;
     };
   };
-  config = {
+  config = lib.mkIf config.secshell.gitea.enable {
     sops.secrets = ({
       "gitea/databasePassword".owner = "gitea";
     } // lib.optionalAttrs (config.secshell.gitea.smtp.hostname != null) { "gitea/smtpPassword".owner = "gitea"; });
@@ -140,6 +137,7 @@
     networking.firewall.allowedTCPPorts = [ config.secshell.gitea.sshPort ];
 
     services.nginx = {
+      enable = true;
       virtualHosts."${toString config.secshell.gitea.domain}" = {
         locations = {
           "/" = {

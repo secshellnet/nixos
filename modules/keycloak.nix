@@ -3,11 +3,8 @@
 , pkgs
 , ...
 }: {
-  imports = [
-    ./postgres.nix
-  ];
-
   options.secshell.keycloak = {
+    enable = lib.mkEnableOption "keycloak";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "auth.${toString config.networking.fqdn}";
@@ -44,7 +41,7 @@
       };
     };
   };
-  config = {
+  config = lib.mkIf config.secshell.keycloak.enable {
     services.postgresql = lib.mkIf config.secshell.keycloak.useLocalDatabase {
       enable = true;
       ensureDatabases = ["keycloak"];
@@ -83,6 +80,7 @@
       # transform given ip addresses (list of strings) to 'allow ELEMENT;' format for nginx
       allowedHosts = map (ip: "allow ${ip};") config.secshell.keycloak.admin.allowFrom;
     in {
+      enable = true;
       virtualHosts = {
         "${toString config.secshell.keycloak.domain}" = {
           locations = {

@@ -12,11 +12,10 @@
       default = "acme@secshell.net";
     };
   };
-  config = {
+  config = lib.mkIf config.services.nginx.enable {
     sops.secrets."cloudflareToken".owner = "root";
 
     services.nginx = {
-      enable = true;
       enableReload = true;
       recommendedProxySettings = true;
       recommendedTlsSettings = true;

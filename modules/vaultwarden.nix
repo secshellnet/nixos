@@ -6,11 +6,8 @@
 }: let
   pkgs-unstable = import nixpkgs { inherit (pkgs) system; };
 in {
-  imports = [
-    ./postgres.nix
-  ];
-
   options.secshell.vaultwarden = {
+    enable = lib.mkEnableOption "vaultwarden";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "vault.${toString config.networking.fqdn}";
@@ -41,7 +38,7 @@ in {
       default = true;
     };
   };
-  config = {
+  config = lib.mkIf config.secshell.vaultwarden.enable {
     sops.secrets."vaultwarden/env" = {};
 
     services.postgresql = lib.mkIf config.secshell.vaultwarden.useLocalDatabase {
@@ -82,6 +79,7 @@ in {
     };
 
     services.nginx = {
+      enable = true;
       virtualHosts."${toString config.secshell.vaultwarden.domain}" = {
         locations = {
           "/" = {

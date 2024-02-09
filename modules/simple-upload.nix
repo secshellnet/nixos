@@ -3,12 +3,13 @@
 , ...
 }: {
   options.secshell.simple-upload = {
+    enable = lib.mkEnableOption "simple-upload";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "upload.${toString config.networking.fqdn}";
     };
   };
-  config = {
+  config = lib.mkIf config.secshell.simple-upload.enable {
     sops.secrets."simple-upload/basicAuth".owner = "nginx";
 
     # ensure upload directory exists
@@ -22,6 +23,7 @@
     };
 
     services.nginx = {
+      enable = true;
       virtualHosts."${toString config.secshell.simple-upload.domain}" = {
         basicAuthFile = config.sops.secrets."simple-upload/basicAuth".path;
         locations = {

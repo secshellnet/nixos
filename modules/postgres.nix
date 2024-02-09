@@ -16,7 +16,7 @@
 
   config = let
     cfg = config.services.postgresql;
-  in
+  in lib.mkIf config.services.postgresql.enable
     {
       services.postgresql = {
         package = pkgs.postgresql_16;
