@@ -8,6 +8,7 @@
       containers = import ./modules/containers.nix;
       gitea = import ./modules/gitea.nix;
       vaultwarden = import ./modules/vaultwarden.nix;
+      netbox = import ./modules/netbox.nix;
     };
   };
 }
