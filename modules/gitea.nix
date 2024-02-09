@@ -3,6 +3,10 @@
 , pkgs
 , ...
 }: {
+  imports = [
+    ./postgres.nix
+  ];
+
   options.secshell.gitea = {
     domain = lib.mkOption {
       type = lib.types.str;
@@ -76,10 +80,6 @@
     sops.secrets = ({
       "gitea/databasePassword".owner = "gitea";
     } // lib.optionalAttrs (config.secshell.gitea.smtp.hostname != null) { "gitea/smtpPassword".owner = "gitea"; });
-
-    imports = [
-      ./postgres.nix
-    ];
 
     services.postgresql = lib.mkIf config.secshell.gitea.useLocalDatabase {
       enable = true;

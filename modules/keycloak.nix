@@ -3,6 +3,10 @@
 , pkgs
 , ...
 }: {
+  imports = [
+    ./postgres.nix
+  ];
+
   options.secshell.keycloak = {
     domain = lib.mkOption {
       type = lib.types.str;
@@ -41,11 +45,6 @@
     };
   };
   config = {
-
-    imports = [
-      ./postgres.nix
-    ];
-
     services.postgresql = lib.mkIf config.secshell.keycloak.useLocalDatabase {
       enable = true;
       ensureDatabases = ["keycloak"];

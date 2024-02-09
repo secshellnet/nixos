@@ -6,6 +6,10 @@
   # Note for initial installation / database initialization: systemd timeout is way to small to finish the whole setup. 
   # Run the deployment (or netbox systemd job) multiple times, until it works (arround 5 times required)
 
+  imports = [
+    ./postgres.nix
+  ];
+
   options.secshell.netbox = {
     domain = lib.mkOption {
       type = lib.types.str;
@@ -59,10 +63,6 @@
     }) // (lib.optionalAttrs (! config.secshell.netbox.useLocalDatabase) {
       "netbox/databasePassword".owner = "netbox";
     });
-
-    imports = [
-      ./postgres.nix
-    ];
 
     services = {
       postgresql = lib.mkIf config.secshell.netbox.useLocalDatabase {

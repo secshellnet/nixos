@@ -2,6 +2,10 @@
 , lib
 , ...
 }: {
+  imports = [
+    ./postgres.nix
+  ];
+
   options.secshell.hedgedoc = {
     domain = lib.mkOption {
       type = lib.types.str;
@@ -45,21 +49,20 @@
   };
   config = {
     sops = {
-      # TODO add optional hedgedoc/sessionSecret
-      secrets = (
-        lib.optionalAttrs (! config.secshell.hedgedoc.useLocalDatabase) { "hedgedoc/databasePassword" = {}; }
-        // lib.optionalAttrs (config.secshell.hedgedoc.oidc.domain != "") { "hedgedoc/oidcSecret" = {}; }
-      );
+      secrets = {
+        "hedgedoc/sessionSecret" = {};
+      } // (lib.optionalAttrs (! config.secshell.hedgedoc.useLocalDatabase) {
+        "hedgedoc/databasePassword" = {};
+      }) // (lib.optionalAttrs (config.secshell.hedgedoc.oidc.domain != "") {
+        "hedgedoc/oidcSecret" = {};
+      });
 
-      templates."hedgedoc/environment".content = (
-        lib.optionalString (! config.secshell.hedgedoc.useLocalDatabase) "CMD_DB_PASSWORD=\"${config.sops.placeholder."hedgedoc/databasePassword"}\"\n"
-        + lib.optionalString (config.secshell.hedgedoc.oidc.domain != "") "CMD_OAUTH2_CLIENT_SECRET=\"${config.sops.placeholder."hedgedoc/oidcSecret"}\"\n"
-      );
+      templates."hedgedoc/environment".content = ''
+        CMD_DB_PASSWORD=\"${config.sops.placeholder."hedgedoc/sessionSecret"}\"
+        ${lib.optionalString (! config.secshell.hedgedoc.useLocalDatabase) "CMD_DB_PASSWORD=\"${config.sops.placeholder."hedgedoc/databasePassword"}\""}
+        ${lib.optionalString (config.secshell.hedgedoc.oidc.domain != "") "CMD_OAUTH2_CLIENT_SECRET=\"${config.sops.placeholder."hedgedoc/oidcSecret"}\""}
+      '';
     };
-
-    imports = [
-      ./postgres.nix
-    ];
 
     services.postgresql = lib.mkIf config.secshell.hedgedoc.useLocalDatabase  {
       enable = true;

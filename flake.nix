@@ -10,6 +10,7 @@
       vaultwarden = import ./modules/vaultwarden.nix;
       netbox = import ./modules/netbox.nix;
       keycloak = import ./modules/keycloak.nix;
+      paperless = import ./modules/paperless.nix;
     };
   };
 }
