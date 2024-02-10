@@ -46,7 +46,7 @@
       "monitoring/grafana/databasePassword".owner = "grafana";
     });
 
-    services.postgresql = lib.mkIf (!config.secshell.monitoring.grafana.useLocalDatabase) {
+    services.postgresql = lib.mkIf (config.secshell.monitoring.grafana.useLocalDatabase) {
       enable = true;
       ensureDatabases = [ "grafana" ];
     };

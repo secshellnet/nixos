@@ -113,6 +113,21 @@
           ];
         }
         {
+          job_name = "other_exporter";
+          static_configs = [
+            {
+              targets = config.secshell.monitoring.exporter.other;
+            }
+          ];
+          relabel_configs = [
+            {
+              source_labels = [ "__address__" ];
+              regex = "([^:]+):\\d+";
+              target_label = "instance";
+            }
+          ];
+        }
+        {
           job_name = "blackbox_exporter_http";
           metrics_path = "/probe";
           params = {
