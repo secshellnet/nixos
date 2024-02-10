@@ -13,6 +13,7 @@
           ./modules/netbox.nix
           ./modules/keycloak.nix
           ./modules/paperless.nix
+          ./modules/monitoring/default.nix
         ];
       };
     };

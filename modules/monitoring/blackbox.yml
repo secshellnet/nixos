@@ -1,0 +1,9 @@
+modules:
+  http_2xx:
+    prober: http
+  http_head:
+    prober: http
+    http:
+      method: HEAD
+  icmp:
+    prober: icmp
