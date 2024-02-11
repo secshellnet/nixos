@@ -26,6 +26,17 @@
   };
   config = lib.mkIf config.secshell.matrix.enable {
     sops.secrets."matrix/synapse/secrets".owner = lib.mkIf config.secshell.matrix.oidc "matrix-synapse";
+    # Example value for secret, see https://matrix-org.github.io/synapse/latest/openid.html#keycloak
+    #matrix:
+    #  synapse:
+    #    secrets: |
+    #      oidc_providers:
+    #        - idp_id: keycloak
+    #          idp_name: Keycloak
+    #          issuer: "https://auth.example.com/realms/main"
+    #          client_id: ""
+    #          client_secret: ""
+    #          scopes: ["openid", "profile"]
 
     services.postgresql.ensureUsers = [{name = "matrix-synapse";}];
     systemd.services.postgresql.postStart = let
