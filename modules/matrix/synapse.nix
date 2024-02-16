@@ -25,7 +25,9 @@
     };
   };
   config = lib.mkIf config.secshell.matrix.enable {
-    sops.secrets."matrix/synapse/secrets".owner = lib.mkIf config.secshell.matrix.oidc "matrix-synapse";
+    sops.secrets."matrix/synapse/secrets" = lib.mkIf config.secshell.matrix.oidc {
+      owner = "matrix-synapse";
+    };
     # Example value for secret, see https://matrix-org.github.io/synapse/latest/openid.html#keycloak
     #matrix:
     #  synapse:
