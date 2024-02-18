@@ -82,7 +82,7 @@
           host = config.secshell.monitoring.grafana.database.hostname;
           user = config.secshell.monitoring.grafana.database.username;
           name = config.secshell.monitoring.grafana.database.name;
-          passwordFile = "$__file{${config.sops.secrets."monitoring/grafana/databasePassword".path}}";
+          password = "$__file{${config.sops.secrets."monitoring/grafana/databasePassword".path}}";
         });
       };
       provision = {
