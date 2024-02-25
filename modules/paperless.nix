@@ -36,11 +36,13 @@
     };
   };
   config = lib.mkIf config.secshell.paperless.enable {
-    sops = lib.mkIf (!config.secshell.paperless.useLocalDatabase) {
+    sops = {
       secrets."paperless/password" = {};
+    } // (lib.optionalAttrs (! config.secshell.paperless.useLocalDatabase) {
       secrets."paperless/databasePassword" = {};
-      templates."paperless/env".content = "PAPERLESS_DBPASS=${config.sops.placeholder."paperless/databasePassword"}";
-    };
+      templates."paperless/env".content = "PAPERLESS_DBPASS=${config.sops.placeholder."paperless/databasePassword"}";    
+    });
+
     services.postgresql = lib.mkIf config.secshell.paperless.useLocalDatabase {
       enable = true;
       ensureDatabases = ["paperless" ];
