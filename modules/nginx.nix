@@ -111,6 +111,7 @@
         server = lib.mkIf config.secshell.nginx.useStagingEnvironment "https://acme-staging-v02.api.letsencrypt.org/directory";
         keyType = "ec384";
         dnsProvider = "cloudflare";
+        dnsResolver = "1.1.1.1:53";  # required to fix subdomain lookups for cloudflare
         credentialsFile = config.sops.secrets."cloudflareToken".path;
       };
     };
