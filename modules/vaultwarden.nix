@@ -3,9 +3,7 @@
 , nixpkgs
 , pkgs
 , ...
-}: let
-  pkgs-unstable = import nixpkgs { inherit (pkgs) system; };
-in {
+}: {
   options.secshell.vaultwarden = {
     enable = lib.mkEnableOption "vaultwarden";
     domain = lib.mkOption {
@@ -48,8 +46,6 @@ in {
 
     services.vaultwarden = {
       enable = true;
-      package = pkgs-unstable.vaultwarden;
-      webVaultPackage = pkgs-unstable.vaultwarden.webvault;
       environmentFile = config.sops.secrets."vaultwarden/env".path;
       config = {
         ROCKET_ADDRESS = "127.0.0.1";

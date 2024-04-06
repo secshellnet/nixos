@@ -15,6 +15,7 @@
           ./modules/paperless.nix
           ./modules/monitoring/default.nix
           ./modules/matrix/default.nix
+          ./modules/unifi.nix
         ];
       };
     };
