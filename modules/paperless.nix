@@ -45,7 +45,7 @@
 
     services.postgresql = lib.mkIf config.secshell.paperless.useLocalDatabase {
       enable = true;
-      ensureDatabases = ["paperless" ];
+      ensureDatabases = ["paperless"];
     };
 
     services.paperless = {
