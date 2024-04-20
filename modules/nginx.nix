@@ -38,7 +38,12 @@
     };
   };
   config = lib.mkIf config.services.nginx.enable {
-    sops.secrets."cloudflareToken".owner = "root";
+    sops = {
+      secrets."cloudflareToken" = {};
+      templates."credentials".content = ''
+        CF_DNS_API_TOKEN=${config.sops.placeholder."cloudflareToken"}
+      '';
+    };
 
     services.nginx = let
       modsecurity_crs = pkgs.fetchFromGitHub {
@@ -113,6 +118,7 @@
         dnsProvider = "cloudflare";
         dnsResolver = "1.1.1.1:53";  # required to fix subdomain lookups for cloudflare
         credentialsFile = config.sops.secrets."cloudflareToken".path;
+        #credentialsFile = config.sops.templates."credentials".path;
       };
     };
   };
