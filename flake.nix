@@ -16,6 +16,7 @@
           ./modules/monitoring/default.nix
           ./modules/matrix/default.nix
           ./modules/unifi.nix
+          ./modules/user.nix
         ];
       };
     };

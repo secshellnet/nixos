@@ -52,8 +52,12 @@
         rev = "v4.0.0";
         sha256 = "TErAhbD77Oa2IauqBnLD+lMk4aI0hWgLb4CcCjqQRdQ=";
       };
+      # TODO logging doesn't work
       modsecurity_conf = pkgs.writeText "modsecurity.conf" ''
-        # TODO Logging doesn't work with DetectionOnly mode (journalctl -f -u nginx shows no logs)
+        SecAuditLog /var/log/nginx/modsec.json
+        SecAuditLogFormat JSON
+        SecAuditLogParts ABIJDEFHZ
+
         SecRuleEngine ${if (config.secshell.nginx.modsecurity.detectionOnly) then "DetectionOnly" else "On"}
 
         SecDefaultAction "phase:1,log,auditlog,pass"
@@ -76,8 +80,6 @@
             t:none,\
             nolog,\
             setvar:tx.enforce_bodyproc_urlencoded=1"
-
-        SecCollectionTimeout 600
 
         SecAction \
             "id:900990,\
@@ -117,8 +119,7 @@
         keyType = "ec384";
         dnsProvider = "cloudflare";
         dnsResolver = "1.1.1.1:53";  # required to fix subdomain lookups for cloudflare
-        credentialsFile = config.sops.secrets."cloudflareToken".path;
-        #credentialsFile = config.sops.templates."credentials".path;
+        credentialsFile = config.sops.templates."credentials".path;
       };
     };
   };
