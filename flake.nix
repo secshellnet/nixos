@@ -9,6 +9,7 @@
           ./modules/postgres.nix
           ./modules/containers.nix
           ./modules/gitea.nix
+          ./modules/woodpecker.nix
           ./modules/vaultwarden.nix
           ./modules/netbox.nix
           ./modules/keycloak.nix
@@ -17,6 +18,7 @@
           ./modules/matrix/default.nix
           ./modules/unifi.nix
           ./modules/user.nix
+          ./modules/nexus.nix
         ];
       };
     };
