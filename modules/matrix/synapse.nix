@@ -60,7 +60,7 @@
         public_baseurl = "https://${config.secshell.matrix.domain}/";
         web_client_location = "https://app.element.io/";
         allow_public_rooms_over_federation = true;
-        enable_registration = false;
+        enable_registration = lib.mkDefault false;
         password_config.enabled = !config.secshell.matrix.oidc;  # allow login using username/password (disable for oidc)
         max_upload_size = "500M";
         app_service_config_files = [
