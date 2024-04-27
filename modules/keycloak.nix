@@ -33,7 +33,7 @@
     admin = {
       domain = lib.mkOption {
         type = lib.types.str;
-        default = null;
+        default = "";
       };
       allowFrom = lib.mkOption {
         type = lib.types.listOf lib.types.str;
@@ -42,6 +42,10 @@
     };
   };
   config = lib.mkIf config.secshell.keycloak.enable {
+    sops.secrets."keycloak/databasePassword" = {
+      owner = lib.mkIf config.secshell.keycloak.useLocalDatabase "postgres";
+    };
+
     services.postgresql = lib.mkIf config.secshell.keycloak.useLocalDatabase {
       enable = true;
       ensureDatabases = ["keycloak"];
@@ -68,8 +72,8 @@
         proxy = "edge"; # Enables communication through HTTP between the proxy and Keycloak.
 
         hostname = config.secshell.keycloak.domain;
-        hostname-strict = lib.mkIf (config.secshell.keycloak.admin.domain != null) false;
-        #hostname-admin = lib.mkIf (config.secshell.keycloak.admin.domain != null) config.secshell.keycloak.admin.domain;
+        hostname-strict = lib.mkIf (config.secshell.keycloak.admin.domain != "") false;
+        #hostname-admin = lib.mkIf (config.secshell.keycloak.admin.domain != "") config.secshell.keycloak.admin.domain;
 
         metrics-enabled = true;
       };
@@ -90,7 +94,7 @@
               proxyWebsockets = true;
             };
             # depending on weather the admin domain is specified or not we configure this location
-            "~* (/admin|/realms/master)" = if (config.secshell.keycloak.admin.domain == null) then {
+            "~* (/admin|/realms/master)" = if (config.secshell.keycloak.admin.domain == "") then {
               proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
               proxyWebsockets = true;
 
@@ -114,7 +118,7 @@
             proxy_buffer_size 256k;
           '';
         };
-        "${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != null) {
+        "${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != "") {
           locations = {
             "= /".return = "307 https://${toString config.secshell.keycloak.admin.domain}/admin/master/console/";
             "/" = {
@@ -140,6 +144,6 @@
       };
     };
     security.acme.certs."${toString config.secshell.keycloak.domain}" = {};
-    security.acme.certs."${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != null) {};
+    security.acme.certs."${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != "") {};
   };
 }
