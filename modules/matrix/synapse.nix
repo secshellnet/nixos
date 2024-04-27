@@ -40,7 +40,10 @@
     #          client_secret: ""
     #          scopes: ["openid", "profile"]
 
-    services.postgresql.ensureUsers = [{name = "matrix-synapse";}];
+    services.postgresql = {
+      enable = true;
+      ensureUsers = [{name = "matrix-synapse";}];
+    };
     systemd.services.postgresql.postStart = let
       inherit (config.services.matrix-synapse.settings.database.args) database user;
     in
@@ -95,19 +98,22 @@
       };
     };
 
-    services.nginx.virtualHosts.${toString config.secshell.matrix.domain} = {
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:${toString config.secshell.matrix.internal_port}";
-        proxyWebsockets = true;
-        extraConfig = ''
-          client_max_body_size 500M;
-        '';
-      };
-      serverName = toString config.secshell.matrix.domain;
+    services.nginx = {
+      enable = true;
+      virtualHosts.${toString config.secshell.matrix.domain} = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString config.secshell.matrix.internal_port}";
+          proxyWebsockets = true;
+          extraConfig = ''
+            client_max_body_size 500M;
+          '';
+        };
+        serverName = toString config.secshell.matrix.domain;
 
-      # use ACME DNS-01 challenge
-      useACMEHost = toString config.secshell.matrix.domain;
-      forceSSL = true;
+        # use ACME DNS-01 challenge
+        useACMEHost = toString config.secshell.matrix.domain;
+        forceSSL = true;
+      };
     };
 
     security.acme.certs."${toString config.secshell.matrix.domain}" = {};

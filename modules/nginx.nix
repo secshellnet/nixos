@@ -54,6 +54,7 @@
       };
       # TODO logging doesn't work
       modsecurity_conf = pkgs.writeText "modsecurity.conf" ''
+        SecAuditEngine RelevantOnly
         SecAuditLog /var/log/nginx/modsec.json
         SecAuditLogFormat JSON
         SecAuditLogParts ABIJDEFHZ
