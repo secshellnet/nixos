@@ -52,7 +52,6 @@
         rev = "v4.0.0";
         sha256 = "TErAhbD77Oa2IauqBnLD+lMk4aI0hWgLb4CcCjqQRdQ=";
       };
-      # TODO logging doesn't work
       modsecurity_conf = pkgs.writeText "modsecurity.conf" ''
         SecAuditEngine RelevantOnly
         SecAuditLog /var/log/nginx/modsec.json
