@@ -13,14 +13,25 @@
     };
   };
   config = lib.mkIf config.secshell.matrix.telegram.enable {
-    sops.secrets = {
-      "matrix/telegram-bridge/environment" = {};
-      "matrix/telegram-bridge/registration" = {
-        path = "/var/lib/mautrix-telegram/telegram-registration.yaml";
-        owner = "mautrix-telegram";
-        group = "matrix-synapse";
-        mode = "440";
+    sops = {
+      secrets = {
+        "matrix/telegram-bridge/as-token" = {};
+        "matrix/telegram-bridge/hs-token" = {};
+        "matrix/telegram-bridge/tg-api-id" = {};
+        "matrix/telegram-bridge/tg-api-hash" = {};
+        "matrix/telegram-bridge/registration" = {
+          path = "/var/lib/mautrix-telegram/telegram-registration.yaml";
+          owner = "mautrix-telegram";
+          group = "matrix-synapse";
+          mode = "440";
+        };
       };
+      templates."matrix/telegram-bridge/env".content = ''
+        MAUTRIX_TELEGRAM_APPSERVICE_AS_TOKEN=${config.sops.placeholder."matrix/telegram-bridge/as-token"}
+        MAUTRIX_TELEGRAM_APPSERVICE_HS_TOKEN=${config.sops.placeholder."matrix/telegram-bridge/hs-token"}
+        MAUTRIX_TELEGRAM_TELEGRAM_API_ID=${config.sops.placeholder."matrix/telegram-bridge/tg-api-id"}
+        MAUTRIX_TELEGRAM_TELEGRAM_API_HASH=${config.sops.placeholder."matrix/telegram-bridge/tg-api-hash"}
+      '';
     };
 
     services = {
@@ -30,7 +41,7 @@
 
       mautrix-telegram = {
         enable = true;
-        environmentFile = config.sops.secrets."matrix/telegram-bridge/environment".path;
+        environmentFile = config.sops.templates."matrix/telegram-bridge/env".path;
         settings = {
           homeserver = {
             address = "https://${config.secshell.matrix.domain}/";
