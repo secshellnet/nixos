@@ -36,9 +36,9 @@
     };
   };
   config = lib.mkIf config.secshell.paperless.enable {
-    sops = {
+    sops = lib.recursiveUpdate {
       secrets."paperless/password" = {};
-    } // (lib.optionalAttrs (! config.secshell.paperless.useLocalDatabase) {
+    } (lib.optionalAttrs (! config.secshell.paperless.useLocalDatabase) {
       secrets."paperless/databasePassword" = {};
       templates."paperless/env".content = "PAPERLESS_DBPASS=${config.sops.placeholder."paperless/databasePassword"}";    
     });
