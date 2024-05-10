@@ -1,6 +1,7 @@
 { config
 , lib
 , pkgs
+, docker-images
 , ...
 }: {
   options.secshell.paperless = {
@@ -33,6 +34,10 @@
     adminUsername = lib.mkOption {
       type = lib.types.str;
       default = "secshelladmin";
+    };
+    enableTika = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
     };
   };
   config = lib.mkIf config.secshell.paperless.enable {
@@ -73,6 +78,10 @@
         PAPERLESS_DBHOST = config.secshell.paperless.database.hostname;
         PAPERLESS_DBUSER = config.secshell.paperless.database.username;
         PAPERLESS_DBNAME = config.secshell.paperless.database.name;
+      }) // (lib.optionalAttrs (config.secshell.paperless.enableTika) {
+        PAPERLESS_TIKA_ENABLED = true;
+        PAPERLESS_TIKA_GOTENBERG_ENDPOINT = "http://localhost:3000";
+        PAPERLESS_TIKA_ENDPOINT = "http://localhost:9998";
       });
 
       passwordFile = config.sops.secrets."paperless/password".path;
@@ -82,16 +91,34 @@
     systemd.services = lib.mkIf (!config.secshell.paperless.useLocalDatabase) {  # TODO only when using remote database or everytime (because of unix sockets)
       "paperless-scheduler".serviceConfig.RestrictAddressFamilies = lib.mkForce [];
       "paperless-scheduler".serviceConfig.PrivateNetwork = lib.mkForce false;
-      #"paperless-task-queue".serviceConfig.RestrictAddressFamilies = lib.mkForce [];  # TODO is this enough
-      #"paperless-consumer".serviceConfig.PrivateNetwork = lib.mkForce false;
-      #"paperless-consumer".serviceConfig.RestrictAddressFamilies = lib.mkForce [];
-      #"paperless-web".serviceConfig.RestrictAddressFamilies = lib.mkForce [];
       
       # set database passwords
       "paperless-web".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
       "paperless-task-queue".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
       "paperless-consumer".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
       "paperless-scheduler".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
+    };
+
+    virtualisation.oci-containers.containers = lib.mkIf config.secshell.paperless.enableTika {
+      tika = {
+        image = docker-images.tika;
+        extraOptions = [
+          "--rm=false"
+          "--restart=always"
+          "--network=host"
+          "--no-healthcheck"
+        ];
+      };
+      gotenberg = {
+        image = docker-images.gotenberg;
+        extraOptions = [
+          "--rm=false"
+          "--restart=always"
+          "--network=host"
+          "--no-healthcheck"
+        ];
+        cmd = [ "gotenberg" "--chromium-disable-javascript=true" "--chromium-allow-list=file:///tmp/.*" "--log-level=warn" "--log-format=text" ];
+      };
     };
 
     services.nginx = {
