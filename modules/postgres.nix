@@ -20,7 +20,7 @@
     {
       services.postgresql = {
         package = pkgs.postgresql_16;
-        enableTCPIP = true;
+        enableTCPIP = true;  # do we need this for any service? can it just be config.services.postgresql.expose?
         ensureUsers =
           map (db: {
             name = db;
@@ -37,6 +37,7 @@
         ''));
       };
 
+      # TODO check if enabled, otherwise configure nftables
       networking.firewall.allowedTCPPorts = lib.mkIf config.services.postgresql.expose [ 5432 ];
 
       systemd.services.postgresql.postStart = lib.mkAfter ''

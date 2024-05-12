@@ -51,6 +51,13 @@
         default = "netbox";
       };
     };
+    plugin = {
+      bgp = lib.mkEnableOption "netbox bgp plugin";
+      documents = lib.mkEnableOption "netbox documents plugin";
+      floorplan = lib.mkEnableOption "netbox floorplan plugin";
+      qrcode = lib.mkEnableOption "netbox qrcode plugin";
+      topologyViews = lib.mkEnableOption "netbox topology views plugin";
+    };
   };
   config = lib.mkIf config.secshell.netbox.enable {
     sops.secrets = {
@@ -96,8 +103,33 @@
           SOCIAL_AUTH_JSONFIELD_ENABLED = true;
           SOCIAL_AUTH_VERIFY_SSL = true;
           #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
-        });
-  
+        }) // {
+          PLUGINS = [
+            (lib.mkIf config.secshell.netbox.plugin.bgp "netbox_bgp")
+            (lib.mkIf config.secshell.netbox.plugin.documents "netbox_documents")
+            (lib.mkIf config.secshell.netbox.plugin.floorplan "netbox_floorplan")
+            (lib.mkIf config.secshell.netbox.plugin.qrcode "netbox_qrcode")
+            (lib.mkIf config.secshell.netbox.plugin.topologyViews "netbox_topology_views")
+          ];
+        };
+
+        plugins = ps: let
+          plugins = ps.callPackage ./netbox-plugins {};
+        in
+          [
+            (lib.mkIf config.secshell.netbox.plugin.bgp plugins.netbox_bgp)
+
+            (lib.mkIf config.secshell.netbox.plugin.documents plugins.netbox_documents)
+
+            (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.netbox_floorplan)
+            (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.drf_extra_fields)
+            (lib.mkIf config.secshell.netbox.plugin.floorplan ps.filetype)
+
+            (lib.mkIf config.secshell.netbox.plugin.qrcode plugins.netbox_qrcode)
+
+            (lib.mkIf config.secshell.netbox.plugin.topologyViews plugins.netbox_topology_views)
+          ];
+
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
         extraConfig = lib.mkIf (! config.secshell.netbox.useLocalDatabase) ''
           DATABASE = {
