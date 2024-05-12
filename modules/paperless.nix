@@ -39,6 +39,10 @@
       type = lib.types.bool;
       default = true;
     };
+    enableRedis = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+    };
   };
   config = lib.mkIf config.secshell.paperless.enable {
     sops = lib.recursiveUpdate {
@@ -82,6 +86,8 @@
         PAPERLESS_TIKA_ENABLED = true;
         PAPERLESS_TIKA_GOTENBERG_ENDPOINT = "http://localhost:3000";
         PAPERLESS_TIKA_ENDPOINT = "http://localhost:9998";
+      }) // (lib.optionalAttrs (config.secshell.paperless.enableRedis) {
+        PAPERLESS_REDIS = "redis://localhost:6379";
       });
 
       passwordFile = config.sops.secrets."paperless/password".path;
@@ -99,8 +105,8 @@
       "paperless-scheduler".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
     };
 
-    virtualisation.oci-containers.containers = lib.mkIf config.secshell.paperless.enableTika {
-      tika = {
+    virtualisation.oci-containers.containers = {
+      tika = lib.mkIf config.secshell.paperless.enableTika {
         image = docker-images.tika;
         extraOptions = [
           "--rm=false"
@@ -109,7 +115,7 @@
           "--no-healthcheck"
         ];
       };
-      gotenberg = {
+      gotenberg = lib.mkIf config.secshell.paperless.enableTika {
         image = docker-images.gotenberg;
         extraOptions = [
           "--rm=false"
@@ -118,6 +124,15 @@
           "--no-healthcheck"
         ];
         cmd = [ "gotenberg" "--chromium-disable-javascript=true" "--chromium-allow-list=file:///tmp/.*" "--log-level=warn" "--log-format=text" ];
+      };
+      redis = lib.mkIf config.secshell.paperless.enableRedis {
+        image = docker-images.redis;
+        extraOptions = [
+          "--rm=false"
+          "--restart=always"
+          "--network=host"
+          "--no-healthcheck"
+        ];
       };
     };
 
