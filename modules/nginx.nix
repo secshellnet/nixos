@@ -102,6 +102,8 @@
       recommendedGzipSettings = true;
       recommendedBrotliSettings = true;
 
+      logError = "/var/log/nginx/error.log";
+
       additionalModules = lib.mkIf config.secshell.nginx.modsecurity.enable [ pkgs.nginxModules.modsecurity ];
       appendHttpConfig = lib.mkIf config.secshell.nginx.modsecurity.enable ''
         modsecurity on;

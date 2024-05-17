@@ -31,10 +31,10 @@
       };
     };
     admin = {
-      domain = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-      };
+      #domain = lib.mkOption {
+      #  type = lib.types.str;
+      #  default = "";
+      #};
       allowFrom = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [];  # means from everywhere
@@ -72,7 +72,7 @@
         proxy = "edge"; # Enables communication through HTTP between the proxy and Keycloak.
 
         hostname = config.secshell.keycloak.domain;
-        hostname-strict = lib.mkIf (config.secshell.keycloak.admin.domain != "") false;
+        #hostname-strict = lib.mkIf (config.secshell.keycloak.admin.domain != "") false;
         #hostname-admin = lib.mkIf (config.secshell.keycloak.admin.domain != "") config.secshell.keycloak.admin.domain;
 
         metrics-enabled = true;
@@ -94,7 +94,7 @@
               proxyWebsockets = true;
             };
             # depending on weather the admin domain is specified or not we configure this location
-            "~* (/admin|/realms/master)" = if (config.secshell.keycloak.admin.domain == "") then {
+            "~* (/admin|/realms/master)" = /* if (config.secshell.keycloak.admin.domain == "") then */ {
               proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
               proxyWebsockets = true;
 
@@ -102,8 +102,8 @@
                 ${lib.concatStringsSep "\n" allowedHosts}
                 deny all;
               '';
-            } else {
-              return = "403";
+            /* } else {
+              return = "403"; */
             };
           };
           serverName = toString config.secshell.keycloak.domain;
@@ -118,32 +118,32 @@
             proxy_buffer_size 256k;
           '';
         };
-        "${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != "") {
-          locations = {
-            "= /".return = "307 https://${toString config.secshell.keycloak.admin.domain}/admin/master/console/";
-            "/" = {
-              proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}/";
-              proxyWebsockets = true;
-            };
-            "~* (/admin|/realms/master)" = {
-              proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
-              proxyWebsockets = true;
-              
-              extraConfig = lib.mkIf ((lib.length config.secshell.keycloak.admin.allowFrom) != 0) ''
-                ${lib.concatStringsSep "\n" allowedHosts}
-                deny all;
-              '';
-            };
-          };
-          serverName = toString config.secshell.keycloak.admin.domain;
+        #"${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != "") {
+        #  locations = {
+        #    "= /".return = "307 https://${toString config.secshell.keycloak.admin.domain}/admin/master/console/";
+        #    "/" = {
+        #      proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}/";
+        #      proxyWebsockets = true;
+        #    };
+        #    "~* (/admin|/realms/master)" = {
+        #      proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
+        #      proxyWebsockets = true;
+        #      
+        #      extraConfig = lib.mkIf ((lib.length config.secshell.keycloak.admin.allowFrom) != 0) ''
+        #        ${lib.concatStringsSep "\n" allowedHosts}
+        #        deny all;
+        #      '';
+        #    };
+        #  };
+        #  serverName = toString config.secshell.keycloak.admin.domain;
 
-          # use ACME DNS-01 challenge
-          useACMEHost = toString config.secshell.keycloak.admin.domain;
-          forceSSL = true;
-        };
+        #  # use ACME DNS-01 challenge
+        #  useACMEHost = toString config.secshell.keycloak.admin.domain;
+        #  forceSSL = true;
+        #};
       };
     };
     security.acme.certs."${toString config.secshell.keycloak.domain}" = {};
-    security.acme.certs."${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != "") {};
+    #security.acme.certs."${toString config.secshell.keycloak.admin.domain}" = lib.mkIf (config.secshell.keycloak.admin.domain != "") {};
   };
 }
