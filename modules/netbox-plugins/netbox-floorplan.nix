@@ -2,6 +2,7 @@
 , buildPythonPackage
 , fetchPypi
 , setuptools
+, netbox
 }: buildPythonPackage rec {
   pname = "netbox-floorplan-plugin";
   version = "0.3.4";
@@ -15,6 +16,14 @@
   nativeBuildInputs = [
     setuptools
   ];
+
+  checkInputs = [
+    netbox
+  ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
 
   meta = with lib; {
     description = "A netbox plugin providing floorplan mapping capability for locations and sites.";

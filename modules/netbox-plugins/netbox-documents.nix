@@ -2,6 +2,7 @@
 , buildPythonPackage
 , fetchPypi
 , setuptools
+, netbox
 }: buildPythonPackage rec {
   pname = "netbox-documents";
   version = "0.6.3";
@@ -15,6 +16,14 @@
   nativeBuildInputs = [
     setuptools
   ];
+
+  checkInputs = [
+    netbox
+  ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
 
   meta = with lib; {
     description = "A plugin designed to faciliate the storage of site, circuit, device type and device specific documents within NetBox.";

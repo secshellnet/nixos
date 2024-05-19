@@ -4,6 +4,7 @@
 , setuptools
 , qrcode
 , pillow
+, netbox
 }: buildPythonPackage rec {
   pname = "netbox-qrcode";
   version = "0.0.11";
@@ -22,6 +23,14 @@
     qrcode
     pillow
   ];
+
+  checkInputs = [
+    netbox
+  ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
 
   meta = with lib; {
     description = "Netbox plugin for generate QR codes for objects: Rack, Device, Cable.";

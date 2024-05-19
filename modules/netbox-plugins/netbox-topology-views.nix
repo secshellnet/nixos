@@ -2,6 +2,7 @@
 , buildPythonPackage
 , fetchPypi
 , setuptools
+, netbox
 }: buildPythonPackage rec {
   pname = "netbox-topology-views";
   #version = "3.9.0";
@@ -17,6 +18,14 @@
   nativeBuildInputs = [
     setuptools
   ];
+
+  checkInputs = [
+    netbox
+  ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
 
   meta = with lib; {
     description = "Create topology views/maps from your devices in NetBox";

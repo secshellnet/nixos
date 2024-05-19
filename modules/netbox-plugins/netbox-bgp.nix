@@ -2,6 +2,7 @@
 , buildPythonPackage
 , fetchPypi
 , setuptools
+, netbox
 }: buildPythonPackage rec {
   pname = "netbox-bgp";
   version = "0.12.1";
@@ -15,6 +16,14 @@
   nativeBuildInputs = [
     setuptools
   ];
+
+  checkInputs = [
+    netbox
+  ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
 
   meta = with lib; {
     description = "Netbox plugin for BGP related objects documentation.";
