@@ -2,6 +2,8 @@
 , buildPythonPackage
 , fetchPypi
 , setuptools
+, qrcode
+, pillow
 }: buildPythonPackage rec {
   pname = "netbox-qrcode";
   version = "0.0.11";
@@ -14,6 +16,11 @@
 
   nativeBuildInputs = [
     setuptools
+  ];
+
+  propagatedBuildInputs = [
+    qrcode
+    pillow
   ];
 
   meta = with lib; {
