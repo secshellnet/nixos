@@ -2,6 +2,9 @@
 , buildPythonPackage
 , fetchPypi
 , setuptools
+, django
+, djangorestframework
+, filetype
 }: buildPythonPackage rec {
   pname = "drf-extra-fields";
   version = "3.7.0";
@@ -14,6 +17,15 @@
 
   nativeBuildInputs = [
     setuptools
+  ];
+
+  propagatedBuildInputs = [
+    filetype
+  ];
+
+  checkInputs = [
+    django
+    djangorestframework
   ];
 
   meta = with lib; {

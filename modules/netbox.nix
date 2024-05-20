@@ -115,20 +115,13 @@
 
         plugins = ps: let
           plugins = ps.callPackage ./netbox-plugins {};
-        in
-          [
-            (lib.mkIf config.secshell.netbox.plugin.bgp plugins.netbox_bgp)
-
-            (lib.mkIf config.secshell.netbox.plugin.documents plugins.netbox_documents)
-
-            (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.netbox_floorplan)
-            (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.drf_extra_fields)
-            (lib.mkIf config.secshell.netbox.plugin.floorplan ps.filetype)
-
-            (lib.mkIf config.secshell.netbox.plugin.qrcode plugins.netbox_qrcode)
-
-            (lib.mkIf config.secshell.netbox.plugin.topologyViews plugins.netbox_topology_views)
-          ];
+        in [
+          (lib.mkIf config.secshell.netbox.plugin.bgp plugins.netbox_bgp)
+          (lib.mkIf config.secshell.netbox.plugin.documents plugins.netbox_documents)
+          (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.netbox_floorplan)
+          (lib.mkIf config.secshell.netbox.plugin.qrcode plugins.netbox_qrcode)
+          (lib.mkIf config.secshell.netbox.plugin.topologyViews plugins.netbox_topology_views)
+        ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
         extraConfig = lib.mkIf (! config.secshell.netbox.useLocalDatabase) ''

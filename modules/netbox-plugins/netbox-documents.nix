@@ -1,9 +1,12 @@
 { lib
+, callPackage
 , buildPythonPackage
 , fetchPypi
 , setuptools
 , netbox
-}: buildPythonPackage rec {
+}: let
+  drf-extra-fields = callPackage ./drf-extra-fields.nix {};
+in buildPythonPackage rec {
   pname = "netbox-documents";
   version = "0.6.3";
   format = "pyproject";
@@ -15,6 +18,10 @@
 
   nativeBuildInputs = [
     setuptools
+  ];
+
+  propagatedBuildInputs = [
+    drf-extra-fields
   ];
 
   checkInputs = [

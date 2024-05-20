@@ -1,4 +1,5 @@
 { lib
+, callPackage
 , buildPythonPackage
 , fetchPypi
 , setuptools
