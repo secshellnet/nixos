@@ -1,6 +1,6 @@
 { lib
 , buildPythonPackage
-, fetchPypi
+, fetchFromGitHub
 , setuptools
 , django
 , djangorestframework
@@ -10,9 +10,11 @@
   version = "3.7.0";
   pyproject = true;
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-1+WLj2BDIjMyi4pkgx5Q6l0Fky08tjrej+ZsDT0hrFs=";
+  src = fetchFromGitHub {
+    owner = "hipo";
+    repo = "drf-extra-fields";
+    rev = "v${version}";
+    hash = "sha256-Ym4vnZ/t0ZdSxU53BC0ducJl1YiTygRSWql/35PNbOU";
   };
 
   nativeBuildInputs = [

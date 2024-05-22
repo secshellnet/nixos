@@ -1,6 +1,6 @@
 { lib
 , buildPythonPackage
-, fetchPypi
+, fetchFromGitHub
 , setuptools
 , netbox
 }: buildPythonPackage rec {
@@ -8,9 +8,11 @@
   version = "0.12.1";
   pyproject = true;
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-U79NJQlSI4I3t100a2lHgCLYmUplIaGrh1uljlYnYIs=";
+  src = fetchFromGitHub {
+    owner = "netbox-community";
+    repo = "netbox-bgp";
+    rev = "v${version}";
+    hash = "sha256-T/+/JxY9Oyf7e70yK8X/ZaENYbV0f0YmGYtaEmnvhgI=";
   };
 
   nativeBuildInputs = [

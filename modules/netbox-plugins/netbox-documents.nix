@@ -1,7 +1,7 @@
 { lib
 , callPackage
 , buildPythonPackage
-, fetchPypi
+, fetchFromGitHub
 , setuptools
 , netbox
 }: let
@@ -11,9 +11,11 @@ in buildPythonPackage rec {
   version = "0.6.3";
   pyproject = true;
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-NSqyXq6ud20MUuOMl1Z8ChdtaTM16kYyzaML7HBG6cw=";
+  src = fetchFromGitHub {
+    owner = "jasonyates";
+    repo = "netbox-documents";
+    rev = "v${version}";
+    hash = "sha256-BQ33eJAp0Hnc77Mvaq9xAcDqz15fkdCwQ7Q46eOOmaI";
   };
 
   nativeBuildInputs = [
