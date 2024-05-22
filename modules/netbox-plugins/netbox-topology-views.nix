@@ -7,7 +7,7 @@
   pname = "netbox-topology-views";
   #version = "3.9.0";
   version = "3.8.1";
-  format = "pyproject";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,10 +27,10 @@
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Create topology views/maps from your devices in NetBox";
     homepage = "https://github.com/netbox-community/netbox-topology-views";
-    license = licenses.asl20;
-    platforms = platforms.linux;
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
   };
 }

@@ -8,7 +8,7 @@
 }: buildPythonPackage rec {
   pname = "netbox-qrcode";
   version = "0.0.11";
-  format = "pyproject";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,10 +32,10 @@
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Netbox plugin for generate QR codes for objects: Rack, Device, Cable.";
     homepage = "https://github.com/netbox-community/netbox-qrcode";
-    license = licenses.asl20;
-    platforms = platforms.linux;
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
   };
 }

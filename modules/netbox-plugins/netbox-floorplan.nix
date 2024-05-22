@@ -7,7 +7,7 @@
 }: buildPythonPackage rec {
   pname = "netbox-floorplan-plugin";
   version = "0.3.4";
-  format = "pyproject";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,10 +26,10 @@
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  meta = with lib; {
-    description = "A netbox plugin providing floorplan mapping capability for locations and sites.";
+  meta = {
+    description = "Netbox plugin providing floorplan mapping capability for locations and sites.";
     homepage = "https://github.com/DanSheps/netbox-floorplan-plugin";
-    license = licenses.asl20;
-    platforms = platforms.linux;
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
   };
 }

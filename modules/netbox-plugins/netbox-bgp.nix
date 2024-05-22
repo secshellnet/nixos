@@ -6,7 +6,7 @@
 }: buildPythonPackage rec {
   pname = "netbox-bgp";
   version = "0.12.1";
-  format = "pyproject";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,10 +25,10 @@
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Netbox plugin for BGP related objects documentation.";
     homepage = "https://github.com/netbox-community/netbox-bgp";
-    license = licenses.asl20;
-    platforms = platforms.linux;
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
   };
 }

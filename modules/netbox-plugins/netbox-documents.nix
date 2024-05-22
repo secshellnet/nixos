@@ -9,7 +9,7 @@
 in buildPythonPackage rec {
   pname = "netbox-documents";
   version = "0.6.3";
-  format = "pyproject";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,10 +32,10 @@ in buildPythonPackage rec {
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  meta = with lib; {
-    description = "A plugin designed to faciliate the storage of site, circuit, device type and device specific documents within NetBox.";
+  meta = {
+    description = "Plugin designed to faciliate the storage of site, circuit, device type and device specific documents within NetBox.";
     homepage = "https://github.com/jasonyates/netbox-documents";
-    license = licenses.asl20;
-    platforms = platforms.linux;
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
   };
 }
