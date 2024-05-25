@@ -9,8 +9,8 @@
       default = 29318;
     };
     adminUsername = lib.mkOption {
-      type = lib.types.str;
-      # TODO if enable
+      type = lib.types.nullOr lib.types.str;
+      default = lib.mkIf (!config.secshell.matrix.whatsapp.enable) null;
     };
   };
   config = lib.mkIf config.secshell.matrix.whatsapp.enable {

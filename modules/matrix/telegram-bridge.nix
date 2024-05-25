@@ -9,7 +9,8 @@
       default = 29317;
     };
     adminUsername = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.nullOr lib.types.str;
+      default = lib.mkIf (!config.secshell.matrix.telegram.enable) null;
     };
   };
   config = lib.mkIf config.secshell.matrix.telegram.enable {

@@ -5,7 +5,8 @@
 }: {
   options.secshell = {
     keysDir = lib.mkOption {
-      type = lib.types.path;
+      type = lib.types.nullOr lib.types.path;
+      default = lib.mkIf (lib.length config.secshell.users == 0) null;
     };
     users = lib.mkOption {
       type = lib.types.listOf lib.types.str;
