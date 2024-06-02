@@ -19,6 +19,7 @@
           ./modules/unifi.nix
           ./modules/user.nix
           ./modules/nexus.nix
+          ./modules/graylog.nix
         ];
       };
     };
