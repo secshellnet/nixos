@@ -61,7 +61,7 @@
       enable = true;
       address = "127.0.0.1";
       port = config.secshell.paperless.internal_port;
-      extraConfig = {
+      settings = {
         PAPERLESS_OCR_LANGUAGE = "deu+eng";
 
         PAPERLESS_DBHOST = "/run/postgresql";
