@@ -7,7 +7,7 @@ This repository provides nix configurations for servers managed by Secure Shell 
 # flake.nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     sops-nix.url = "github:Mic92/sops-nix";
     deploy-sh.url = "github:Defelo/deploy-sh";
@@ -50,6 +50,7 @@ This repository provides nix configurations for servers managed by Secure Shell 
         pkgs = mkPkgs { inherit system; };
         specialArgs = inputs // { 
           pkgs-unstable = mkPkgs { inherit system; repo = nixpkgs-unstable; };
+          # docker-images = fromTOML (builtins.readFile ./docker-images.toml);
         };
         modules = with self.nixosModules; [
           ./hosts/com/example/portal/configuration.nix
@@ -107,7 +108,7 @@ This repository provides nix configurations for servers managed by Secure Shell 
     };
   };
 
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
 }
 ```
 
@@ -121,9 +122,6 @@ This repository provides nix configurations for servers managed by Secure Shell 
   console.keyMap = "de";
   
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-
-  environment.systemPackages = with pkgs; [ git ];
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   services.openssh = {
     enable = true;
