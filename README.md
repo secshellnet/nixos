@@ -43,26 +43,65 @@ This repository provides nix configurations for servers managed by Secure Shell 
       ];
       eachDefaultSystem = lib.genAttrs defaultSystems;
     in {
-    nixosConfigurations = {
-      # Note: This section of the flake contains your systems.
-      "portal.example.com" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        pkgs = mkPkgs { inherit system; };
-        specialArgs = inputs // { 
-          pkgs-unstable = mkPkgs { inherit system; repo = nixpkgs-unstable; };
-          # docker-images = fromTOML (builtins.readFile ./docker-images.toml);
-        };
-        modules = with self.nixosModules; [
-          ./hosts/com/example/portal/configuration.nix
-          
-          ./modules/default.nix
-          
-          secshell.nixosModules.default
-          deploy-sh.nixosModules.default
-          sops-nix.nixosModules.sops
-        ];
-      };
-    };
+    nixosConfigurations = let
+      hosts = let
+        listHosts = dir: let
+          dirContent = builtins.readDir dir;
+          isHost = dirContent."configuration.nix" or null == "regular";
+        in
+          if isHost
+          then [dir]
+          else
+            lib.pipe dirContent [
+              (lib.filterAttrs (_: type: type == "directory"))
+              builtins.attrNames
+              (map (x: listHosts /${dir}/${x}))
+              builtins.concatLists
+            ];
+      in
+        listHosts ./hosts;
+
+      makeFqdn = lib.flip lib.pipe [
+        (lib.path.removePrefix ./hosts)
+        lib.path.subpath.components
+        lib.reverseList
+        (builtins.concatStringsSep ".")
+      ];
+    in
+      builtins.listToAttrs (
+        map (host: {
+          name = makeFqdn host;
+          value = lib.nixosSystem rec {
+            system = if lib.pathExists /${host}/system.txt
+                     then lib.removeSuffix "\n" (builtins.readFile /${host}/system.txt)
+                     else "x86_64-linux";
+            pkgs = mkPkgs { inherit system; };
+            specialArgs =
+              inputs
+              // (lib.mapAttrs' (name: value: {
+                name = lib.removePrefix "nix" name;
+                value = mkPkgs { inherit system; repo = value; };
+              }) (lib.filterAttrs (name: _: lib.hasPrefix "nixpkgs-" name) inputs))
+              // {
+                docker-images = fromTOML (builtins.readFile ./docker-images.toml);
+              };
+            modules = [
+              deploy-sh.nixosModules.default
+              sops-nix.nixosModules.default
+              secshell.nixosModules.default
+              /${host}/configuration.nix
+              ./modules/default.nix
+              {
+                networking.hostName = builtins.head (lib.splitString "." (makeFqdn host));
+                networking.domain = builtins.concatStringsSep "." (builtins.tail (lib.splitString "." (makeFqdn host)));
+                deploy-sh.targetHost = "root@${makeFqdn host}";
+                sops.defaultSopsFile = /${host}/secrets.yaml;
+              }
+            ];
+          };
+        })
+        hosts
+      );
 
     deploy-sh.hosts = lib.filterAttrs (_: host: host.config ? "deploy-sh") self.nixosConfigurations;
 
@@ -94,7 +133,6 @@ This repository provides nix configurations for servers managed by Secure Shell 
     ./networking.nix
   ];
 
-  sops.defaultSopsFile = ./secrets.yaml;
   deploy-sh.targetHost = "root@portal.example.com";
 
   secshell = {
