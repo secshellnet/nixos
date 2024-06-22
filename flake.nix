@@ -20,6 +20,7 @@
 
           # Support Modules
           ./modules/containers.nix
+          ./modules/hardening.nix
           ./modules/nginx.nix
           ./modules/postgres.nix
           ./modules/user.nix
