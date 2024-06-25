@@ -18,12 +18,13 @@
           ./modules/vaultwarden.nix
           ./modules/woodpecker.nix
 
-          # Support Modules
+          # Other
           ./modules/containers.nix
           ./modules/hardening.nix
           ./modules/nginx.nix
           ./modules/postgres.nix
           ./modules/user.nix
+          ./modules/bind.nix
         ];
       };
     };
