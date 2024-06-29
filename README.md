@@ -3,6 +3,60 @@
 This repository provides nix configurations for servers managed by Secure Shell Networks.
 
 ## Example
+We're using a single flake, which builds nixosSystems dynamicly based on the 
+contents of the `hosts` directory. The `configuration.nix` of each host imports 
+the `hardware-configuration.nix`, which has been generated during installation
+and extended by the bootloader configuration. Secret values are managed using
+sops and will be stored in the `secrets.yaml` inside the host directory.
+
+Adding `portal.example.com` to the directory structure looks like this:
+```sh
+.
+├── docker-images.toml
+├── flake.lock
+├── flake.nix
+├── hosts
+│   └── com
+│       └── example
+│           └── portal
+│               ├── configuration.nix
+│               ├── hardware-configuration.nix
+│               └── secrets.yaml
+└── modules
+    └── default.nix
+```
+
+The `configuration.nix` contains also the configuration properties of the
+`secshell` namespace, in which services like hedgedoc and vaultwarden can
+be enabled.
+```nix
+# hosts/com/example/portal/configuration.nix
+{ config
+, pkgs
+, lib
+, ...
+}: {
+  imports = [
+    ./hardware-configuration.nix
+    ./networking.nix
+  ];
+
+  secshell = {
+    hedgedoc = {
+      enable = true;
+      internal_port = 8000;
+    };
+    vaultwarden = {
+      enable = true;
+      internal_port = 8001;
+    };
+    users = [ "alice" "bob" ];
+  };
+
+  system.stateVersion = "24.05";
+}
+```
+
 ```nix
 # flake.nix
 {
@@ -118,35 +172,6 @@ This repository provides nix configurations for servers managed by Secure Shell 
       };
     });
   };
-}
-```
-
-```nix
-# hosts/com/example/portal/configuration.nix
-{ config
-, pkgs
-, lib
-, ...
-}: {
-  imports = [
-    ./hardware-configuration.nix
-    ./networking.nix
-  ];
-
-  deploy-sh.targetHost = "root@portal.example.com";
-
-  secshell = {
-    hedgedoc = {
-      enable = true;
-      internal_port = 8000;
-    };
-    vaultwarden = {
-      enable = true;
-      internal_port = 8001;
-    };
-  };
-
-  system.stateVersion = "24.05";
 }
 ```
 
