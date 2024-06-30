@@ -231,15 +231,7 @@
       };
       pushgateway.enable = true;
       pushgateway.web.listen-address = ":${toString config.secshell.monitoring.pushgateway.internal_port}";
-      rules = [
-        # TODO
-        #''
-        #  service down
-        #  disk 90% full
-        #  blackbox down
-        #  blackbox tls certificate expires soon
-        #''
-      ];
+      ruleFiles = [ ./rules.yml ];
       exporters = {
         node = {
           enable = true;
