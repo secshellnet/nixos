@@ -232,13 +232,105 @@
       pushgateway.enable = true;
       pushgateway.web.listen-address = ":${toString config.secshell.monitoring.pushgateway.internal_port}";
       rules = [
-        # TODO
-        #''
-        #  service down
-        #  disk 90% full
-        #  blackbox down
-        #  blackbox tls certificate expires soon
-        #''
+        ''
+          ALERT JobDown
+          IF up == 0
+          FOR 5m
+          LABELS {
+            severity="critical"
+          }
+          ANNOTATIONS {
+            summary = "{{$labels.alias}}: Node is down.",
+            description = "{{$labels.alias}} has been down for more than 5 minutes."
+          }
+
+          ALERT HostOutOfMemory
+          IF (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+          FOR 2m
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Host out of memory (instance {{ $labels.instance }})",
+            description = "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT BlackboxProbeFailed
+          IF probe_success == 0
+          FOR 0m
+          LABELS {
+            severity="critical"
+          }
+          ANNOTATIONS {
+            summary = "Blackbox probe failed (instance {{ $labels.instance }})",
+            description = "Probe failed\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT BlackboxSslCertificateWillExpireSoon
+          IF 0 <= round((last_over_time(probe_ssl_earliest_cert_expiry[10m]) - time()) / 86400, 0.1) < 30
+          FOR 0m
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Blackbox SSL certificate will expire soon (instance {{ $labels.instance }})",
+            description = "SSL certificate expires in less than 30 days\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT BlackboxSslCertificateWillExpireSoon
+          IF 0 <= round((last_over_time(probe_ssl_earliest_cert_expiry[10m]) - time()) / 86400, 0.1) < 30
+          FOR 0m
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Blackbox SSL certificate will expire soon (instance {{ $labels.instance }})",
+            description = "SSL certificate expires in less than 30 days\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT HostOutOfDiskSpace
+          IF ((node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 10 and ON (instance, device, mountpoint) node_filesystem_readonly == 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+          FOR 2m
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Host out of disk space (instance {{ $labels.instance }})",
+            description = "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT HostDiskWillFillIn24Hours
+          IF ((node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 10 and ON (instance, device, mountpoint) predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs"}[1h], 24 * 3600) < 0 and ON (instance, device, mountpoint) node_filesystem_readonly == 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+          FOR 2m
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Host disk will fill in 24 hours (instance {{ $labels.instance }})",
+            description = "Filesystem is predicted to run out of space within the next 24 hours at current write rate\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT HostHighCpuLoad
+          IF (sum by (instance) (avg by (mode, instance) (rate(node_cpu_seconds_total{mode!="idle"}[2m]))) > 0.8) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+          FOR 7d
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Host high CPU load (instance {{ $labels.instance }})",
+            description = "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+
+          ALERT HostCpuHighIowait
+          IF (avg by (instance) (rate(node_cpu_seconds_total{mode="iowait"}[5m])) * 100 > 10) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+          LABELS {
+            severity="warning"
+          }
+          ANNOTATIONS {
+            summary = "Host CPU high iowait (instance {{ $labels.instance }})",
+            description = "CPU iowait > 10%. A high iowait means that you are disk or network bound.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        ''
       ];
       exporters = {
         node = {
