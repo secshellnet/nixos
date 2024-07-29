@@ -18,8 +18,6 @@ in {
     security.sudo.execWheelOnly = true;
 
     boot = {
-      kernelPackages = pkgs.linuxPackages;  # hardened kernel is currently broken
-
       extraModprobeConfig = let
         cmd = "${pkgs.coreutils-full}/bin/true";
       in ''
