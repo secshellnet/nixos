@@ -1,22 +1,22 @@
-{ config
-, lib
-, pkgs
-, ...
-}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   options.secshell.nexus = {
     enable = lib.mkEnableOption "nexus";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "nexus.${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
-    };
+    internal_port = lib.mkOption { type = lib.types.port; };
   };
   config = lib.mkIf config.secshell.nexus.enable {
     services = {
       nexus = {
-        enable = true;  
+        enable = true;
         listenPort = config.secshell.nexus.internal_port;
       };
 
@@ -34,6 +34,6 @@
         };
       };
     };
-    security.acme.certs."${toString config.secshell.nexus.domain}" = {};    
+    security.acme.certs."${toString config.secshell.nexus.domain}" = { };
   };
 }

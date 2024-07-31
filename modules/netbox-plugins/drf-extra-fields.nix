@@ -1,11 +1,13 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, setuptools
-, django
-, djangorestframework
-, filetype
-}: buildPythonPackage rec {
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  setuptools,
+  django,
+  djangorestframework,
+  filetype,
+}:
+buildPythonPackage rec {
   pname = "drf-extra-fields";
   version = "3.7.0";
   pyproject = true;
@@ -17,13 +19,9 @@
     hash = "sha256-Ym4vnZ/t0ZdSxU53BC0ducJl1YiTygRSWql/35PNbOU";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
-  propagatedBuildInputs = [
-    filetype
-  ];
+  propagatedBuildInputs = [ filetype ];
 
   checkInputs = [
     django

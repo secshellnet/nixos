@@ -1,12 +1,15 @@
-{ lib
-, callPackage
-, buildPythonPackage
-, fetchFromGitHub
-, setuptools
-, netbox
-}: let
-  drf-extra-fields = callPackage ./drf-extra-fields.nix {};
-in buildPythonPackage rec {
+{
+  lib,
+  callPackage,
+  buildPythonPackage,
+  fetchFromGitHub,
+  setuptools,
+  netbox,
+}:
+let
+  drf-extra-fields = callPackage ./drf-extra-fields.nix { };
+in
+buildPythonPackage rec {
   pname = "netbox-documents";
   version = "0.6.3";
   pyproject = true;
@@ -18,17 +21,11 @@ in buildPythonPackage rec {
     hash = "sha256-BQ33eJAp0Hnc77Mvaq9xAcDqz15fkdCwQ7Q46eOOmaI";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
-  propagatedBuildInputs = [
-    drf-extra-fields
-  ];
+  propagatedBuildInputs = [ drf-extra-fields ];
 
-  checkInputs = [
-    netbox
-  ];
+  checkInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH

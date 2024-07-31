@@ -1,18 +1,24 @@
-{ config
-, pkgs
-, lib
-, ...
-}: let
-  mkDisableOption = name: lib.mkEnableOption name // {
-    default = true;
-    example = false;
-  };
-in {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  mkDisableOption =
+    name:
+    lib.mkEnableOption name
+    // {
+      default = true;
+      example = false;
+    };
+in
+{
   options.secshell.bind = {
     enable = lib.mkEnableOption "bind";
     zones = lib.mkOption {
       type = lib.types.attrs;
-      default = {};
+      default = { };
     };
     versionText = lib.mkOption {
       type = lib.types.str;
@@ -23,7 +29,7 @@ in {
   config = lib.mkIf config.secshell.bind.enable {
     services.bind = {
       enable = true;
-      forwarders = [];
+      forwarders = [ ];
       zones = config.secshell.bind.zones;
       extraOptions = ''
         recursion no;

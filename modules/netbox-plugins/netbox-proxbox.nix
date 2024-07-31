@@ -1,23 +1,25 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, setuptools
-, numpy
-, poetry-core
-, invoke
-, requests
-, pynetbox
-, paramiko
-, fastapi
-, starlette
-, uvicorn
-, websockets
-, jinja2
-, ujson
-, orjson
-, httpcore
-, netbox
-}: buildPythonPackage rec {
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  setuptools,
+  numpy,
+  poetry-core,
+  invoke,
+  requests,
+  pynetbox,
+  paramiko,
+  fastapi,
+  starlette,
+  uvicorn,
+  websockets,
+  jinja2,
+  ujson,
+  orjson,
+  httpcore,
+  netbox,
+}:
+buildPythonPackage rec {
   pname = "netbox-proxbox";
   version = "0.0.5";
   pyproject = true;
@@ -26,12 +28,10 @@
     owner = "netdevopsbr";
     repo = "netbox-proxbox";
     rev = "v${version}";
-    hash = "sha256-T/+/JxY9Oyf7e70yK8X/ZaENYbV0f0YmGYtaEmnvhgI=";  # TODO
+    hash = "sha256-T/+/JxY9Oyf7e70yK8X/ZaENYbV0f0YmGYtaEmnvhgI="; # TODO
   };
 
-  build-system = [
-    setuptools
-  ];
+  build-system = [ setuptools ];
 
   dependencies = [
     numpy
@@ -50,9 +50,7 @@
     httpcore
   ];
 
-  checkInputs = [
-    netbox
-  ];
+  checkInputs = [ netbox ];
 
   meta = {
     description = "Netbox Plugin for integration between Proxmox and Netbox";

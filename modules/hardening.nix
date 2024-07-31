@@ -1,14 +1,20 @@
-{ lib
-, pkgs
-, config
-, modulesPath
-, ...
-}: let
-  mkDisableOption = name: lib.mkEnableOption name // {
-    default = true;
-    example = false;
-  };
-in {
+{
+  lib,
+  pkgs,
+  config,
+  modulesPath,
+  ...
+}:
+let
+  mkDisableOption =
+    name:
+    lib.mkEnableOption name
+    // {
+      default = true;
+      example = false;
+    };
+in
+{
   options.secshell.hardening = mkDisableOption "hardening";
 
   imports = [ (modulesPath + "/profiles/hardened.nix") ];
@@ -18,20 +24,34 @@ in {
     security.sudo.execWheelOnly = true;
 
     boot = {
-      extraModprobeConfig = let
-        cmd = "${pkgs.coreutils-full}/bin/true";
-        modules = [
-          # Unused network protocols
-          "sctp" "dccp" "rds" "tipc"
-          "n-hdlc" "x25" "appletalk" "can" "atm" "psnap" "p8022"
+      extraModprobeConfig =
+        let
+          cmd = "${pkgs.coreutils-full}/bin/true";
+          modules = [
+            # Unused network protocols
+            "sctp"
+            "dccp"
+            "rds"
+            "tipc"
+            "n-hdlc"
+            "x25"
+            "appletalk"
+            "can"
+            "atm"
+            "psnap"
+            "p8022"
 
-          # Unused file systems
-          "jffs2" "hfsplus" "udf"
+            # Unused file systems
+            "jffs2"
+            "hfsplus"
+            "udf"
 
-          # Unused interfaces
-          "thunderbolt" "firewire-core"
-        ];
-      in lib.concatStringsSep "\n" (map (kmod: "install ${kmod} ${cmd}") modules);
+            # Unused interfaces
+            "thunderbolt"
+            "firewire-core"
+          ];
+        in
+        lib.concatStringsSep "\n" (map (kmod: "install ${kmod} ${cmd}") modules);
 
       kernel.sysctl = {
         "dev.tty.ldisc_autoload" = lib.mkDefault 0;
@@ -53,7 +73,12 @@ in {
     fileSystems."/proc" = {
       fsType = "proc";
       device = "proc";
-      options = [ "nosuid" "nodev" "noexec" "hidepid=2" ];
+      options = [
+        "nosuid"
+        "nodev"
+        "noexec"
+        "hidepid=2"
+      ];
       neededForBoot = true;
     };
 

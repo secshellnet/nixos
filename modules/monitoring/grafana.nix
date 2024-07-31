@@ -1,11 +1,7 @@
-{ config
-, lib
-, ...
-}: {
+{ config, lib, ... }:
+{
   options.secshell.monitoring.grafana = {
-    internal_port = lib.mkOption {
-      type = lib.types.port;
-    };
+    internal_port = lib.mkOption { type = lib.types.port; };
     oidc = {
       domain = lib.mkOption {
         type = lib.types.str;
@@ -40,11 +36,14 @@
     };
   };
   config = lib.mkIf config.secshell.monitoring.enable {
-    sops.secrets = {} // (lib.optionalAttrs (config.secshell.monitoring.grafana.oidc.domain != "") {
-      "monitoring/grafana/oidcSecret".owner = "grafana";
-    }) // (lib.optionalAttrs (! config.secshell.monitoring.grafana.useLocalDatabase) {
-      "monitoring/grafana/databasePassword".owner = "grafana";
-    });
+    sops.secrets =
+      { }
+      // (lib.optionalAttrs (config.secshell.monitoring.grafana.oidc.domain != "") {
+        "monitoring/grafana/oidcSecret".owner = "grafana";
+      })
+      // (lib.optionalAttrs (!config.secshell.monitoring.grafana.useLocalDatabase) {
+        "monitoring/grafana/databasePassword".owner = "grafana";
+      });
 
     services.postgresql = lib.mkIf (config.secshell.monitoring.grafana.useLocalDatabase) {
       enable = true;
@@ -73,17 +72,20 @@
           token_url = "https://${config.secshell.monitoring.grafana.oidc.domain}/realms/${config.secshell.monitoring.grafana.oidc.realm}/protocol/openid-connect/token";
           api_url = "https://${config.secshell.monitoring.grafana.oidc.domain}/realms/${config.secshell.monitoring.grafana.oidc.realm}/protocol/openid-connect/userinfo";
         };
-        database = {
-          type = "postgres";
-        } // (lib.optionalAttrs (config.secshell.monitoring.grafana.useLocalDatabase) {
-          host = "/run/postgresql";
-          user = "grafana";
-        }) // (lib.optionalAttrs (!config.secshell.monitoring.grafana.useLocalDatabase) {
-          host = config.secshell.monitoring.grafana.database.hostname;
-          user = config.secshell.monitoring.grafana.database.username;
-          name = config.secshell.monitoring.grafana.database.name;
-          password = "$__file{${config.sops.secrets."monitoring/grafana/databasePassword".path}}";
-        });
+        database =
+          {
+            type = "postgres";
+          }
+          // (lib.optionalAttrs (config.secshell.monitoring.grafana.useLocalDatabase) {
+            host = "/run/postgresql";
+            user = "grafana";
+          })
+          // (lib.optionalAttrs (!config.secshell.monitoring.grafana.useLocalDatabase) {
+            host = config.secshell.monitoring.grafana.database.hostname;
+            user = config.secshell.monitoring.grafana.database.username;
+            name = config.secshell.monitoring.grafana.database.name;
+            password = "$__file{${config.sops.secrets."monitoring/grafana/databasePassword".path}}";
+          });
       };
       provision = {
         enable = true;

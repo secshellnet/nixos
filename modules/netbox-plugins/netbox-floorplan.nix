@@ -1,10 +1,12 @@
-{ lib
-, callPackage
-, buildPythonPackage
-, fetchPypi
-, setuptools
-, netbox
-}: buildPythonPackage rec {
+{
+  lib,
+  callPackage,
+  buildPythonPackage,
+  fetchPypi,
+  setuptools,
+  netbox,
+}:
+buildPythonPackage rec {
   pname = "netbox-floorplan-plugin";
   version = "0.3.4";
   pyproject = true;
@@ -14,13 +16,9 @@
     hash = "sha256-3/ReEM6ZG5+B4HQmK/cfxUry9kyR4HuyPVvYEcFz14M=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
-  checkInputs = [
-    netbox
-  ];
+  checkInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH

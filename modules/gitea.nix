@@ -1,17 +1,17 @@
-{ config
-, lib
-, pkgs
-, ...
-}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   options.secshell.gitea = {
     enable = lib.mkEnableOption "gitea";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "git.${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
-    };
+    internal_port = lib.mkOption { type = lib.types.port; };
     useLocalDatabase = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -74,28 +74,34 @@
     };
   };
   config = lib.mkIf config.secshell.gitea.enable {
-    sops.secrets = ({
-      "gitea/databasePassword".owner = "gitea";
-    } // lib.optionalAttrs (config.secshell.gitea.smtp.hostname != null) { "gitea/smtpPassword".owner = "gitea"; });
+    sops.secrets = (
+      {
+        "gitea/databasePassword".owner = "gitea";
+      }
+      // lib.optionalAttrs (config.secshell.gitea.smtp.hostname != null) {
+        "gitea/smtpPassword".owner = "gitea";
+      }
+    );
 
     services.postgresql = lib.mkIf config.secshell.gitea.useLocalDatabase {
       enable = true;
-      ensureDatabases = ["gitea"];
+      ensureDatabases = [ "gitea" ];
     };
 
     services.gitea = {
       enable = true;
-      database = {
-        type = "postgres";
-      } // (lib.optionalAttrs (config.secshell.gitea.useLocalDatabase) {
-        host = "/run/postgresql";
-      }) // (lib.optionalAttrs (! config.secshell.gitea.useLocalDatabase) {
-        host = config.secshell.gitea.database.hostname;
-        user = config.secshell.gitea.database.username;
-        name = config.secshell.gitea.database.name;
-        passwordFile = config.sops.secrets."gitea/databasePassword".path;
-        createDatabase = false;
-      });
+      database =
+        {
+          type = "postgres";
+        }
+        // (lib.optionalAttrs (config.secshell.gitea.useLocalDatabase) { host = "/run/postgresql"; })
+        // (lib.optionalAttrs (!config.secshell.gitea.useLocalDatabase) {
+          host = config.secshell.gitea.database.hostname;
+          user = config.secshell.gitea.database.username;
+          name = config.secshell.gitea.database.name;
+          passwordFile = config.sops.secrets."gitea/databasePassword".path;
+          createDatabase = false;
+        });
       settings = {
         server = {
           HTTP_ADDR = "127.0.0.1";
@@ -132,7 +138,9 @@
           ISSUE_PAGING_NUM = 100;
         };
       };
-      mailerPasswordFile = lib.mkIf (config.secshell.gitea.smtp.hostname != null) config.sops.secrets."gitea/smtpPassword".path;
+      mailerPasswordFile = lib.mkIf (
+        config.secshell.gitea.smtp.hostname != null
+      ) config.sops.secrets."gitea/smtpPassword".path;
     };
     networking.firewall.allowedTCPPorts = [ config.secshell.gitea.sshPort ];
 
@@ -152,6 +160,6 @@
         forceSSL = true;
       };
     };
-    security.acme.certs."${toString config.secshell.gitea.domain}" = {};
+    security.acme.certs."${toString config.secshell.gitea.domain}" = { };
   };
 }

@@ -1,17 +1,17 @@
-{ config
-, lib
-, pkgs
-, ...
-}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   options.secshell.graylog = {
     enable = lib.mkEnableOption "graylog";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "graylog.${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
-    };
+    internal_port = lib.mkOption { type = lib.types.port; };
   };
   config = lib.mkIf config.secshell.graylog.enable {
     sops.secrets."graylog/rootPassword".owner = "graylog";
@@ -24,9 +24,9 @@
       graylog = {
         enable = true;
         rootUsername = "secshelladmin";
-        rootPasswordSha2 = "";  # will be set to correct value by preStart command
+        rootPasswordSha2 = ""; # will be set to correct value by preStart command
         passwordSecret = config.sops.secrets."graylog/rootPassword".path;
-        elasticsearchHosts = ["http://${config.services.elasticsearch.listenAddress}:9200"];
+        elasticsearchHosts = [ "http://${config.services.elasticsearch.listenAddress}:9200" ];
         nodeIdFile = "/var/lib/graylog/node-id";
         extraConfig = ''
           http_bind_address = 127.0.0.1:${toString config.secshell.graylog.internal_port}
@@ -37,9 +37,7 @@
     };
 
     # ensure graylog config file can be written by pre start job which runs as graylog
-    systemd.tmpfiles.rules = [
-      "f /etc/graylog.conf 640 graylog graylog"
-    ];
+    systemd.tmpfiles.rules = [ "f /etc/graylog.conf 640 graylog graylog" ];
 
     # add password hash from secrets to configuration
     systemd.services.graylog.preStart = ''
@@ -63,6 +61,6 @@
       };
     };
 
-    security.acme.certs."${toString config.secshell.graylog.domain}" = {};
+    security.acme.certs."${toString config.secshell.graylog.domain}" = { };
   };
 }

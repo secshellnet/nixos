@@ -1,7 +1,5 @@
-{ config
-, lib
-, ...
-}: {
+{ config, lib, ... }:
+{
   options.secshell.matrix.telegram = {
     enable = lib.mkEnableOption "mautrix-telegram";
     internal_port = lib.mkOption {
@@ -16,10 +14,10 @@
   config = lib.mkIf config.secshell.matrix.telegram.enable {
     sops = {
       secrets = {
-        "matrix/telegram-bridge/as-token" = {};
-        "matrix/telegram-bridge/hs-token" = {};
-        "matrix/telegram-bridge/tg-api-id" = {};
-        "matrix/telegram-bridge/tg-api-hash" = {};
+        "matrix/telegram-bridge/as-token" = { };
+        "matrix/telegram-bridge/hs-token" = { };
+        "matrix/telegram-bridge/tg-api-id" = { };
+        "matrix/telegram-bridge/tg-api-hash" = { };
         "matrix/telegram-bridge/registration" = {
           path = "/var/lib/mautrix-telegram/telegram-registration.yaml";
           owner = "mautrix-telegram";
@@ -67,7 +65,7 @@
       isSystemUser = true;
       group = "mautrix-telegram";
     };
-    users.groups.mautrix-telegram = {};
+    users.groups.mautrix-telegram = { };
     systemd.services.mautrix-telegram.serviceConfig = {
       DynamicUser = lib.mkForce false;
       User = "mautrix-telegram";

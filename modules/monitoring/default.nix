@@ -1,7 +1,5 @@
-{ lib
-, config
-, ...
-}: {
+{ lib, config, ... }:
+{
   imports = [
     ./grafana.nix
     ./nginx.nix
@@ -33,29 +31,29 @@
     exporter = {
       node = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
       };
       postgres = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
       };
       blackbox_http = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
       };
       blackbox_icmp = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
       };
       other = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
       };
     };
 
     alertmanagerDefaultEmailReceiver = lib.mkOption {
       type = lib.types.listOf lib.types.attrs;
-      default = [];
+      default = [ ];
     };
   };
 
@@ -74,21 +72,11 @@
       scrapeConfigs = [
         {
           job_name = "prometheus";
-          static_configs = [
-            {
-              targets = [
-                "localhost:9090"
-              ];
-            }
-          ];
+          static_configs = [ { targets = [ "localhost:9090" ]; } ];
         }
         {
           job_name = "node_exporter";
-          static_configs = [
-            {
-              targets = config.secshell.monitoring.exporter.node;
-            }
-          ];
+          static_configs = [ { targets = config.secshell.monitoring.exporter.node; } ];
           relabel_configs = [
             {
               source_labels = [ "__address__" ];
@@ -99,11 +87,7 @@
         }
         {
           job_name = "postgres_exporter";
-          static_configs = [
-            {
-              targets = config.secshell.monitoring.exporter.postgres;
-            }
-          ];
+          static_configs = [ { targets = config.secshell.monitoring.exporter.postgres; } ];
           relabel_configs = [
             {
               source_labels = [ "__address__" ];
@@ -114,11 +98,7 @@
         }
         {
           job_name = "other_exporter";
-          static_configs = [
-            {
-              targets = config.secshell.monitoring.exporter.other;
-            }
-          ];
+          static_configs = [ { targets = config.secshell.monitoring.exporter.other; } ];
           relabel_configs = [
             {
               source_labels = [ "__address__" ];
@@ -133,11 +113,7 @@
           params = {
             module = [ "http_2xx" ];
           };
-          static_configs = [
-            {
-              targets = config.secshell.monitoring.exporter.blackbox_http;
-            }
-          ];
+          static_configs = [ { targets = config.secshell.monitoring.exporter.blackbox_http; } ];
           relabel_configs = [
             {
               source_labels = [ "__address__" ];
@@ -159,11 +135,7 @@
           params = {
             module = [ "icmp" ];
           };
-          static_configs = [
-            {
-              targets = config.secshell.monitoring.exporter.blackbox_icmp;
-            }
-          ];
+          static_configs = [ { targets = config.secshell.monitoring.exporter.blackbox_icmp; } ];
           relabel_configs = [
             {
               source_labels = [ "__address__" ];
@@ -192,13 +164,7 @@
         {
           job_name = "pushgateway";
           honor_labels = true;
-          static_configs = [
-            {
-              targets = [
-                "localhost:9091"
-              ];
-            }
-          ];
+          static_configs = [ { targets = [ "localhost:9091" ]; } ];
         }
       ];
       alertmanager = {
@@ -249,9 +215,9 @@
     };
 
     networking.firewall.allowedTCPPorts = [
-      9090  # prometheus
-      9091  # pushgateway
-      9093  # alertmanager
+      9090 # prometheus
+      9091 # pushgateway
+      9093 # alertmanager
     ];
   };
 }

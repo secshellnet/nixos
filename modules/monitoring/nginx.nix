@@ -1,7 +1,5 @@
-{ config
-, lib
-, ...
-}: {
+{ config, lib, ... }:
+{
   options.secshell.monitoring.domains = {
     prometheus = lib.mkOption {
       type = lib.types.str;
@@ -60,10 +58,7 @@
         config.secshell.monitoring.domains.prometheus
         config.secshell.monitoring.domains.alertmanager
         config.secshell.monitoring.domains.pushgateway
-      ] ++ (lib.optionals config.services.grafana.enable [
-        config.secshell.monitoring.domains.grafana
-      ]);
+      ] ++ (lib.optionals config.services.grafana.enable [ config.secshell.monitoring.domains.grafana ]);
     };
   };
 }
-

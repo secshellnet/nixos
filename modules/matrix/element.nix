@@ -1,8 +1,10 @@
-{ config
-, pkgs
-, lib
-, ...
-}: {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+{
   options.secshell.matrix.element = {
     enable = lib.mkEnableOption "element";
     domain = lib.mkOption {
@@ -30,9 +32,7 @@
             disable_custom_urls = true;
             showLabsSettings = true;
             default_theme = "dark";
-            room_directory.servers = [
-              config.secshell.matrix.homeserver
-            ];
+            room_directory.servers = [ config.secshell.matrix.homeserver ];
             setting_defaults = {
               "UIFeature.registration" = false;
               "UIFeature.passwordReset" = false;
@@ -42,6 +42,6 @@
       };
     };
 
-    security.acme.certs."${toString config.secshell.matrix.element.domain}" = {};
+    security.acme.certs."${toString config.secshell.matrix.element.domain}" = { };
   };
 }

@@ -1,7 +1,5 @@
-{ config
-, lib
-, ...
-}: {
+{ config, lib, ... }:
+{
   options.secshell.simple-upload = {
     enable = lib.mkEnableOption "simple-upload";
     domain = lib.mkOption {
@@ -13,9 +11,7 @@
     sops.secrets."simple-upload/basicAuth".owner = "nginx";
 
     # ensure upload directory exists
-    systemd.tmpfiles.rules = [
-      "d /var/lib/uploads 750 nginx nginx"
-    ];
+    systemd.tmpfiles.rules = [ "d /var/lib/uploads 750 nginx nginx" ];
 
     # systemd prevent write access to /var/lib/uploads by default by making it read only
     systemd.services.nginx.serviceConfig = {
@@ -54,6 +50,6 @@
         forceSSL = true;
       };
     };
-    security.acme.certs."${toString config.secshell.simple-upload.domain}" = {};
+    security.acme.certs."${toString config.secshell.simple-upload.domain}" = { };
   };
 }

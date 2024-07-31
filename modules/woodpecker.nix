@@ -1,18 +1,18 @@
-{ config
-, lib
-, pkgs
-, pkgs-unstable
-, ...
-}: {
+{
+  config,
+  lib,
+  pkgs,
+  pkgs-unstable,
+  ...
+}:
+{
   options.secshell.gitea.woodpecker = {
     enable = lib.mkEnableOption "woodpecker";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "woodpecker.${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
-    };
+    internal_port = lib.mkOption { type = lib.types.port; };
     grpc_port = lib.mkOption {
       type = lib.types.port;
       default = 9000;
@@ -21,9 +21,9 @@
   config = lib.mkIf (config.secshell.gitea.woodpecker.enable && config.secshell.gitea.enable) {
     sops = {
       secrets = {
-        "woodpecker/secret" = {};
-        "woodpecker/oidcClientId" = {};
-        "woodpecker/oidcSecret" = {};
+        "woodpecker/secret" = { };
+        "woodpecker/oidcClientId" = { };
+        "woodpecker/oidcSecret" = { };
       };
       templates."woodpecker/environment".content = ''
         WOODPECKER_AGENT_SECRET=${config.sops.placeholder."woodpecker/secret"}
@@ -79,7 +79,7 @@
         };
       };
     };
-    security.acme.certs."${toString config.secshell.gitea.woodpecker.domain}" = {};
+    security.acme.certs."${toString config.secshell.gitea.woodpecker.domain}" = { };
 
     virtualisation.podman = {
       enable = true;
@@ -97,15 +97,16 @@
 
     # Adjust runner service for nix usage
     systemd.services.woodpecker-agent-docker = {
-      after = [ "podman.socket" "woodpecker-server.service" ];
+      after = [
+        "podman.socket"
+        "woodpecker-server.service"
+      ];
       # might break deployment
       restartIfChanged = false;
       serviceConfig = {
-        BindPaths = [
-          "/run/podman/podman.sock"
-        ];
+        BindPaths = [ "/run/podman/podman.sock" ];
       };
     };
-    
+
   };
 }

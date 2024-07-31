@@ -1,7 +1,5 @@
-{ config
-, lib
-, ...
-}: {
+{ config, lib, ... }:
+{
   options.secshell.matrix.whatsapp = {
     enable = lib.mkEnableOption "mautrix-whatsapp";
     internal_port = lib.mkOption {
@@ -16,8 +14,8 @@
   config = lib.mkIf config.secshell.matrix.whatsapp.enable {
     sops = {
       secrets = {
-        "matrix/whatsapp-bridge/as-token" = {};
-        "matrix/whatsapp-bridge/hs-token" = {};
+        "matrix/whatsapp-bridge/as-token" = { };
+        "matrix/whatsapp-bridge/hs-token" = { };
         "matrix/whatsapp-bridge/registration" = {
           path = "/var/lib/mautrix-whatsapp/whatsapp-registration.yaml";
           owner = "mautrix-whatsapp";
@@ -65,7 +63,7 @@
       isSystemUser = true;
       group = "mautrix-whatsapp";
     };
-    users.groups.mautrix-whatsapp = {};
+    users.groups.mautrix-whatsapp = { };
     systemd.services.mautrix-whatsapp.serviceConfig = {
       DynamicUser = lib.mkForce false;
       User = "mautrix-whatsapp";

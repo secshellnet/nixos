@@ -1,9 +1,11 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, setuptools
-, netbox
-}: buildPythonPackage rec {
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  setuptools,
+  netbox,
+}:
+buildPythonPackage rec {
   pname = "netbox-bgp";
   version = "0.12.1";
   pyproject = true;
@@ -15,13 +17,9 @@
     hash = "sha256-T/+/JxY9Oyf7e70yK8X/ZaENYbV0f0YmGYtaEmnvhgI=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
-  checkInputs = [
-    netbox
-  ];
+  checkInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH

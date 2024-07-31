@@ -1,16 +1,12 @@
-{ config
-, lib
-, ...
-}: {
+{ config, lib, ... }:
+{
   options.secshell.hedgedoc = {
     enable = lib.mkEnableOption "hedgedoc";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "md.${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
-    };
+    internal_port = lib.mkOption { type = lib.types.port; };
     useLocalDatabase = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -46,22 +42,29 @@
   };
   config = lib.mkIf config.secshell.hedgedoc.enable {
     sops = {
-      secrets = {
-        "hedgedoc/sessionSecret" = {};
-      } // (lib.optionalAttrs (! config.secshell.hedgedoc.useLocalDatabase) {
-        "hedgedoc/databasePassword" = {};
-      }) // (lib.optionalAttrs (config.secshell.hedgedoc.oidc.domain != "") {
-        "hedgedoc/oidcSecret" = {};
-      });
+      secrets =
+        {
+          "hedgedoc/sessionSecret" = { };
+        }
+        // (lib.optionalAttrs (!config.secshell.hedgedoc.useLocalDatabase) {
+          "hedgedoc/databasePassword" = { };
+        })
+        // (lib.optionalAttrs (config.secshell.hedgedoc.oidc.domain != "") {
+          "hedgedoc/oidcSecret" = { };
+        });
 
       templates."hedgedoc/environment".content = ''
         CMD_DB_PASSWORD=\"${config.sops.placeholder."hedgedoc/sessionSecret"}\"
-        ${lib.optionalString (! config.secshell.hedgedoc.useLocalDatabase) "CMD_DB_PASSWORD=\"${config.sops.placeholder."hedgedoc/databasePassword"}\""}
-        ${lib.optionalString (config.secshell.hedgedoc.oidc.domain != "") "CMD_OAUTH2_CLIENT_SECRET=\"${config.sops.placeholder."hedgedoc/oidcSecret"}\""}
+        ${lib.optionalString (!config.secshell.hedgedoc.useLocalDatabase)
+          "CMD_DB_PASSWORD=\"${config.sops.placeholder."hedgedoc/databasePassword"}\""
+        }
+        ${lib.optionalString (config.secshell.hedgedoc.oidc.domain != "")
+          "CMD_OAUTH2_CLIENT_SECRET=\"${config.sops.placeholder."hedgedoc/oidcSecret"}\""
+        }
       '';
     };
 
-    services.postgresql = lib.mkIf config.secshell.hedgedoc.useLocalDatabase  {
+    services.postgresql = lib.mkIf config.secshell.hedgedoc.useLocalDatabase {
       enable = true;
       ensureDatabases = [ "hedgedoc" ];
     };
@@ -93,7 +96,7 @@
           tokenURL = "https://${config.secshell.hedgedoc.oidc.domain}/realms/${config.secshell.hedgedoc.oidc.realm}/protocol/openid-connect/token";
           authorizationURL = "https://${config.secshell.hedgedoc.oidc.domain}/realms/${config.secshell.hedgedoc.oidc.realm}/protocol/openid-connect/auth";
           clientID = config.secshell.hedgedoc.oidc.clientId;
-          clientSecret = "";  # defined in secrets, but needs to exists for login button to show
+          clientSecret = ""; # defined in secrets, but needs to exists for login button to show
           providerName = "Keycloak";
           scope = "openid email profile";
         };
@@ -121,6 +124,6 @@
       };
     };
 
-    security.acme.certs."${toString config.secshell.hedgedoc.domain}" = {};
+    security.acme.certs."${toString config.secshell.hedgedoc.domain}" = { };
   };
 }

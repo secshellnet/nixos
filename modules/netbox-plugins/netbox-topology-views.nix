@@ -1,9 +1,11 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, setuptools
-, netbox
-}: buildPythonPackage rec {
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  setuptools,
+  netbox,
+}:
+buildPythonPackage rec {
   pname = "netbox-topology-views";
   #version = "3.9.0";
   version = "3.8.1";
@@ -15,13 +17,9 @@
     hash = "sha256-9Lfi/ca50Ig0IQHP7YTmbtBeMXfXX2Vx9hsmBtVkGds";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
-  checkInputs = [
-    netbox
-  ];
+  checkInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
