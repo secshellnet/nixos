@@ -20,13 +20,18 @@ in {
     boot = {
       extraModprobeConfig = let
         cmd = "${pkgs.coreutils-full}/bin/true";
-      in ''
-        # Unused network protocols
-        install sctp ${cmd}
-        install dccp ${cmd}
-        install rds ${cmd}
-        install tipc ${cmd}
-      '';
+        modules = [
+          # Unused network protocols
+          "sctp" "dccp" "rds" "tipc"
+          "n-hdlc" "x25" "appletalk" "can" "atm" "psnap" "p8022"
+
+          # Unused file systems
+          "jffs2" "hfsplus" "udf"
+
+          # Unused interfaces
+          "thunderbolt" "firewire-core"
+        ];
+      in lib.concatStringsSep "\n" (map (kmod: "install ${kmod} ${cmd}") modules);
 
       kernel.sysctl = {
         "dev.tty.ldisc_autoload" = lib.mkDefault 0;
@@ -43,6 +48,13 @@ in {
         "net.ipv6.conf.all.accept_ra" = lib.mkDefault 0;
         "net.ipv6.conf.default.accept_ra" = lib.mkDefault 0;
       };
+    };
+
+    fileSystems."/proc" = {
+      fsType = "proc";
+      device = "proc";
+      options = [ "nosuid" "nodev" "noexec" "hidepid=2" ];
+      neededForBoot = true;
     };
 
     services = {
@@ -64,6 +76,29 @@ in {
         enable = true;
         maxretry = 10;
         bantime = "24h";
+      };
+    };
+
+    security.pam.services.passwd.rules.password = {
+      pwquality = {
+        control = "required";
+        modulePath = "${pkgs.libpwquality.lib}/lib/security/pam_pwquality.so";
+        # order BEFORE pam_unix.so
+        order = config.security.pam.services.passwd.rules.password.unix.order - 10;
+        settings = {
+          retry = 3;
+          minlen = 8;
+          difok = 6;
+          dcredit = -1;
+          ucredit = 1;
+          ocredit = -1;
+          lcredit = 1;
+          enforce_for_root = true;
+        };
+      };
+      unix = {
+        control = lib.mkForce "required";
+        settings.use_authtok = true;
       };
     };
   };
