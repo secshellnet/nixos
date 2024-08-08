@@ -17,6 +17,10 @@
       type = lib.types.str;
       default = "grafana.${toString config.networking.fqdn}";
     };
+    loki = lib.mkOption {
+      type = lib.types.str;
+      default = "loki.${toString config.networking.fqdn}";
+    };
   };
   config = lib.mkIf config.secshell.monitoring.enable {
     services.nginx = {
@@ -58,7 +62,8 @@
         config.secshell.monitoring.domains.prometheus
         config.secshell.monitoring.domains.alertmanager
         config.secshell.monitoring.domains.pushgateway
-      ] ++ (lib.optionals config.services.grafana.enable [ config.secshell.monitoring.domains.grafana ]);
+      ] ++ (lib.optionals config.services.grafana.enable [ config.secshell.monitoring.domains.grafana ])
+        ++ (lib.optionals config.secshell.monitoring.loki.enable [ config.secshell.monitoring.domains.loki ]);
     };
   };
 }
