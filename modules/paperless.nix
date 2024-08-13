@@ -107,6 +107,8 @@
       # TODO only when using remote database or everytime (because of unix sockets)
       "paperless-scheduler".serviceConfig.RestrictAddressFamilies = lib.mkForce [ ];
       "paperless-scheduler".serviceConfig.PrivateNetwork = lib.mkForce false;
+      "paperless-consumer".serviceConfig.RestrictAddressFamilies = lib.mkForce [ ];
+      "paperless-consumer".serviceConfig.PrivateNetwork = lib.mkForce false;
 
       # set database passwords
       "paperless-web".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
