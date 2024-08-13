@@ -1,6 +1,7 @@
 { lib, config, ... }:
 {
   imports = [
+    ./loki.nix
     ./grafana.nix
     ./nginx.nix
   ];
