@@ -17,98 +17,98 @@ As all monitoring nginx virtual hosts, it is only available over TLS. The certif
 ### Example configuration
 
 ```nix
- secshell = {
-    monitoring = {
-      enable = true;
+secshell = {
+  monitoring = {
+    enable = true;
 
-      loki.enable = true;
+    loki.enable = true;
 
-      # ...
-    };
     # ...
- };
+  };
+  # ...
+};
 
- services.loki = {
+services.loki = {
 
-    dataDir = "/var/lib/loki"; # default
+  dataDir = "/var/lib/loki"; # default
 
-    # https://grafana.com/docs/loki/latest/configure/#configuration-file-reference
-    configuration = {
-      target = "all"; # run all components of loki in one container
+  # https://grafana.com/docs/loki/latest/configure/#configuration-file-reference
+  configuration = {
+    target = "all"; # run all components of loki in one container
 
-      auth_enabled = false; # we will configure auth in nginx
+    auth_enabled = false; # we will configure auth in nginx
 
-      # set up loki's own logging
-      server = {
-        log_level = "info";
-        log_request_headers = true;
-      };
+    # set up loki's own logging
+    server = {
+      log_level = "info";
+      log_request_headers = true;
+    };
 
-      common = {
-        path_prefix = "/var/lib/loki";
-        storage = {
-          filesystem = {
-            chunks_directory = "/var/lib/loki/chunks";
-            rules_directory = "/var/lib/loki/rules";
-          };
-        };
-        replication_factor = 1;
-        ring = {
-          kvstore = {
-            store = "inmemory";
-          };
+    common = {
+      path_prefix = "/var/lib/loki";
+      storage = {
+        filesystem = {
+          chunks_directory = "/var/lib/loki/chunks";
+          rules_directory = "/var/lib/loki/rules";
         };
       };
-
-      query_range = {
-        results_cache = {
-          cache = {
-            embedded_cache = {
-              enabled = true;
-              max_size_mb = 100;
-            };
-          };
+      replication_factor = 1;
+      ring = {
+        kvstore = {
+          store = "inmemory";
         };
-      };
-
-      schema_config = {
-        configs = [
-          {
-            from = "2020-10-24";
-            store = "tsdb";
-            object_store = "filesystem";
-            schema = "v13";
-            index = {
-              prefix = "index_";
-              period = "24h";
-            };
-          }
-        ];
-      };
-
-      compactor = {
-        retention_enabled = true;
-        compaction_interval = "10m"; # How often the compactor spins up
-        retention_delete_delay = "1h"; # Deleted chunks are fully removed after a grace period
-        delete_request_store = "filesystem";
-      };
-
-      limits_config = {
-        retention_period = "744h"; # 1 month
       };
     };
-  };
 
-  # use sops secrets for basic auth
-  sops.secrets.lokiBasicPassword = {};
-  sops.templates.lokiBasicAuth = {
-    # allow nginx user to read the sops secret
-    owner = config.services.nginx.user;
-    group = config.services.nginx.group;
-    content = ''loki:${config.sops.placeholder.lokiBasicPassword}''; # basic user: loki, basic passwd: in yaml
-  };
+    query_range = {
+      results_cache = {
+        cache = {
+          embedded_cache = {
+            enabled = true;
+            max_size_mb = 100;
+          };
+        };
+      };
+    };
 
-  services.nginx.virtualHosts."loki.${toString config.networking.fqdn}" = {
-    basicAuthFile = config.sops.templates.lokiBasicAuth.path;
+    schema_config = {
+      configs = [
+        {
+          from = "2020-10-24";
+          store = "tsdb";
+          object_store = "filesystem";
+          schema = "v13";
+          index = {
+            prefix = "index_";
+            period = "24h";
+          };
+        }
+      ];
+    };
+
+    compactor = {
+      retention_enabled = true;
+      compaction_interval = "10m"; # How often the compactor spins up
+      retention_delete_delay = "1h"; # Deleted chunks are fully removed after a grace period
+      delete_request_store = "filesystem";
+    };
+
+    limits_config = {
+      retention_period = "744h"; # 1 month
+    };
   };
+};
+
+# use sops secrets for basic auth
+sops.secrets.lokiBasicPassword = {};
+sops.templates.lokiBasicAuth = {
+  # allow nginx user to read the sops secret
+  owner = config.services.nginx.user;
+  group = config.services.nginx.group;
+  content = ''loki:${config.sops.placeholder.lokiBasicPassword}''; # basic user: loki, basic passwd: in yaml
+};
+
+services.nginx.virtualHosts."loki.${toString config.networking.fqdn}" = {
+  basicAuthFile = config.sops.templates.lokiBasicAuth.path;
+};
 ```
