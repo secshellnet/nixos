@@ -65,7 +65,7 @@
           config.secshell.monitoring.domains.pushgateway
         ]
         ++ (lib.optionals config.services.grafana.enable [ config.secshell.monitoring.domains.grafana ])
-        ++ (lib.optionals config.services.loki.enabled [ config.secshell.monitoring.domains.loki ]);
+        ++ (lib.optionals config.services.loki.enable [ config.secshell.monitoring.domains.loki ]);
     };
   };
 }
