@@ -82,6 +82,14 @@
       initialAdminPassword = "InitialKeycloakPassword";
     };
 
+    systemd.services.keycloak.preStart = lib.mkIf (!config.secshell.keycloak.useLocalDatabase) ''
+      echo 'Checking if configured external database is reachable!'
+      while ! ${pkgs.netcat}/bin/nc -z "${config.secshell.keycloak.database.hostname}" "5432"; do
+        sleep 0.1
+      done
+      echo 'PostgreSQL database is reachable! Starting keycloak...'
+    '';
+
     services.nginx =
       let
         # transform given ip addresses (list of strings) to 'allow ELEMENT;' format for nginx
