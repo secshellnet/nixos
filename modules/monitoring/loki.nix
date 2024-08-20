@@ -7,7 +7,7 @@
       default = 3100;
     };
   };
-  config = lib.mkIf config.secshell.monitoring.enable {
+  config = lib.mkIf config.secshell.monitoring.loki.enable {
     services.loki = {
       enable = true;
       configuration.analytics.reporting_enabled = false; # prevent loki from talking home
