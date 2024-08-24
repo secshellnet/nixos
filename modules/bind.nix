@@ -25,14 +25,25 @@ in
       default = "Authorative Name Server";
     };
     exporter.enable = mkDisableOption "bind_exporter";
+    forwarders = lib.mkOption {
+      default = [ ];
+      type = lib.types.listOf lib.types.str;
+      description = ''
+        List of servers we should forward requests to.
+      '';
+    };
   };
   config = lib.mkIf config.secshell.bind.enable {
     services.bind = {
       enable = true;
-      forwarders = [ ];
+      forwarders = config.secshell.bind.forwarders;
       zones = config.secshell.bind.zones;
       extraOptions = ''
-        recursion no;
+        recursion ${if (builtins.length config.secshell.bind.forwarders) == 0 then "no" else "yes" };
+
+        ${if (builtins.length config.secshell.bind.forwarders) == 0 then "" else "auth-nxdomain no;" }
+
+        ${if (builtins.length config.secshell.bind.forwarders) == 0 then "" else "dnssec-validation no;" }
 
         # obscure bind9 chaos version queries
         version "${config.secshell.bind.versionText}";
