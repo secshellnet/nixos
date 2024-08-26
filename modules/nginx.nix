@@ -14,6 +14,10 @@
       type = lib.types.str;
       default = "acme@secshell.net";
     };
+    openFirewall = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+    };
     modsecurity = {
       # TODO After testing has been complete this should be enabled by default at least
       #      with SecRuleEngine DetectionOnly to prevent blocking of legitimate services
@@ -116,7 +120,7 @@
           modsecurity_rules_file ${modsecurity_conf};
         '';
       };
-    networking.firewall.allowedTCPPorts = [
+    networking.firewall.allowedTCPPorts = lib.mkIf config.secshell.nginx.openFirewall [
       80
       443
     ];
