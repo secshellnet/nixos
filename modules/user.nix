@@ -24,28 +24,31 @@
         map (username: { "${username}Password".neededForUsers = true; }) config.secshell.users
       );
 
-    users.users =
-      {
-        root = {
-          hashedPasswordFile = config.sops.secrets."rootPassword".path;
-          openssh.authorizedKeys.keyFiles = lib.filter (path: builtins.pathExists path) (
-            map (username: /${config.secshell.keysDir}/${username}.ssh) config.secshell.users
-          );
-        };
-      }
-      // builtins.listToAttrs (
-        map (
-          username:
-          lib.nameValuePair username {
-            isNormalUser = true;
-            extraGroups = [ "wheel" ];
-            hashedPasswordFile = config.sops.secrets."${username}Password".path;
-            openssh.authorizedKeys.keyFiles =
-              lib.mkIf (lib.pathExists /${config.secshell.keysDir}/${username}.ssh)
-                [ /${config.secshell.keysDir}/${username}.ssh ];
-          }
-        ) config.secshell.users
-      );
+    users = {
+      mutableUsers = false;
+      users =
+        {
+          root = {
+            hashedPasswordFile = config.sops.secrets."rootPassword".path;
+            openssh.authorizedKeys.keyFiles = lib.filter (path: builtins.pathExists path) (
+              map (username: /${config.secshell.keysDir}/${username}.ssh) config.secshell.users
+            );
+          };
+        }
+        // builtins.listToAttrs (
+          map (
+            username:
+            lib.nameValuePair username {
+              isNormalUser = true;
+              extraGroups = [ "wheel" ];
+              hashedPasswordFile = config.sops.secrets."${username}Password".path;
+              openssh.authorizedKeys.keyFiles =
+                lib.mkIf (lib.pathExists /${config.secshell.keysDir}/${username}.ssh)
+                  [ /${config.secshell.keysDir}/${username}.ssh ];
+            }
+          ) config.secshell.users
+        );
+    };
 
     # Show fqdn instead of short hostname in ps1
     environment.etc."bashrc.local".text = ''
