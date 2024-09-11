@@ -20,6 +20,7 @@
             ./modules/unifi.nix
             ./modules/vaultwarden.nix
             ./modules/woodpecker.nix
+            ./modules/zammad.nix
 
             # Other
             ./modules/containers.nix
