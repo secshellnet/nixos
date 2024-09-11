@@ -23,6 +23,11 @@ in
     nix.settings.allowed-users = [ "@wheel" ];
     security.sudo.execWheelOnly = true;
 
+    # weird logrotate issue during config check
+    # cannot find name for group ID 30000
+    # https://discourse.nixos.org/t/logrotate-config-fails-due-to-missing-group-30000/28501
+    security.unprivilegedUsernsClone = true;
+
     boot = {
       extraModprobeConfig =
         let
@@ -67,11 +72,6 @@ in
         "net.ipv6.conf.all.forwarding" = lib.mkDefault 0;
         "net.ipv6.conf.all.accept_ra" = lib.mkDefault 0;
         "net.ipv6.conf.default.accept_ra" = lib.mkDefault 0;
-
-        # weird logrotate issue during config check
-        # cannot find name for group ID 30000
-        # https://discourse.nixos.org/t/logrotate-config-fails-due-to-missing-group-30000/28501
-        "kernel.unprivileged_userns_clone" = lib.mkDefault 1;
       };
     };
 
