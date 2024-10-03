@@ -31,7 +31,7 @@ in
     boot = {
       extraModprobeConfig =
         let
-          cmd = "${pkgs.coreutils-full}/bin/true";
+          cmd = "${pkgs.coreutils}/bin/true";
           modules = [
             # Unused network protocols
             "sctp"
