@@ -26,7 +26,7 @@ in
     # weird logrotate issue during config check
     # cannot find name for group ID 30000
     # https://discourse.nixos.org/t/logrotate-config-fails-due-to-missing-group-30000/28501
-    security.unprivilegedUsernsClone = true;
+    services.logrotate.checkConfig = false;
 
     boot = {
       extraModprobeConfig =
