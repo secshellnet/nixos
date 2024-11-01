@@ -70,7 +70,7 @@
         });
       settings = {
         http-host = "127.0.0.1";
-        http-port = config.secshell.keycloak.internal_port;
+        https-port = config.secshell.keycloak.internal_port;
         proxy = "edge"; # Enables communication through HTTP between the proxy and Keycloak.
 
         hostname = config.secshell.keycloak.domain;
@@ -79,6 +79,8 @@
 
         metrics-enabled = true;
       };
+      sslCertificateKey = "/var/lib/acme/${toString config.secshell.keycloak.domain}/key.pem";
+      sslCertificate = "/var/lib/acme/${toString config.secshell.keycloak.domain}/fullchain.pem";
       initialAdminPassword = "InitialKeycloakPassword";
     };
 
@@ -102,13 +104,13 @@
             locations = {
               "= /".return = "307 https://${toString config.secshell.keycloak.domain}/realms/main/account/";
               "/" = {
-                proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}/";
+                proxyPass = "https://127.0.0.1:${toString config.secshell.keycloak.internal_port}/";
                 proxyWebsockets = true;
               };
               # depending on weather the admin domain is specified or not we configure this location
               "~* (/admin|/realms/master)" = # if (config.secshell.keycloak.admin.domain == "") then
                 {
-                  proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
+                  proxyPass = "https://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
                   proxyWebsockets = true;
 
                   extraConfig = lib.mkIf ((lib.length config.secshell.keycloak.admin.allowFrom) != 0) ''
@@ -137,11 +139,11 @@
           #  locations = {
           #    "= /".return = "307 https://${toString config.secshell.keycloak.admin.domain}/admin/master/console/";
           #    "/" = {
-          #      proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}/";
+          #      proxyPass = "https://127.0.0.1:${toString config.secshell.keycloak.internal_port}/";
           #      proxyWebsockets = true;
           #    };
           #    "~* (/admin|/realms/master)" = {
-          #      proxyPass = "http://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
+          #      proxyPass = "https://127.0.0.1:${toString config.secshell.keycloak.internal_port}";
           #      proxyWebsockets = true;
           #
           #      extraConfig = lib.mkIf ((lib.length config.secshell.keycloak.admin.allowFrom) != 0) ''
