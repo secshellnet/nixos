@@ -4,31 +4,39 @@
   fetchFromGitHub,
   setuptools,
   netbox,
+  pytestCheckHook,
+  python,
 }:
+
 buildPythonPackage rec {
   pname = "netbox-bgp";
-  version = "0.12.1";
+  version = "0.14.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
     repo = "netbox-bgp";
     rev = "v${version}";
-    hash = "sha256-T/+/JxY9Oyf7e70yK8X/ZaENYbV0f0YmGYtaEmnvhgI=";
+    hash = "sha256-O/kvohyQRhAkDKN5smygyrldINkTQX6yY4eTHn7zSPU";
   };
 
-  nativeBuildInputs = [ setuptools ];
+  build-system = [ setuptools ];
 
-  checkInputs = [ netbox ];
+  nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+
+  pythonImportsCheck = [ "netbox_bgp" ];
+
   meta = {
-    description = "Netbox plugin for BGP related objects documentation.";
+    description = "NetBox plugin for BGP related objects documentation";
     homepage = "https://github.com/netbox-community/netbox-bgp";
+    changelog = "https://github.com/netbox-community/netbox-bgp/releases/tag/${src.rev}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ felbinger ];
   };
 }

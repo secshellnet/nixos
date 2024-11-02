@@ -1,40 +1,43 @@
 {
   lib,
-  callPackage,
   buildPythonPackage,
   fetchFromGitHub,
   setuptools,
+  drf-extra-fields,
+  python,
   netbox,
 }:
-let
-  drf-extra-fields = callPackage ./drf-extra-fields.nix { };
-in
+
 buildPythonPackage rec {
   pname = "netbox-documents";
-  version = "0.6.3";
+  version = "0.7.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jasonyates";
     repo = "netbox-documents";
     rev = "v${version}";
-    hash = "sha256-BQ33eJAp0Hnc77Mvaq9xAcDqz15fkdCwQ7Q46eOOmaI";
+    hash = "sha256-Uijdaicbx9A9fBgFx3zyhhFlokFdb9TSolnExbfkkc4=";
   };
 
-  nativeBuildInputs = [ setuptools ];
+  build-system = [ setuptools ];
 
-  propagatedBuildInputs = [ drf-extra-fields ];
+  dependencies = [ drf-extra-fields ];
 
-  checkInputs = [ netbox ];
+  nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+  pythonImportsCheck = [ "netbox_documents" ];
+
   meta = {
-    description = "Plugin designed to faciliate the storage of site, circuit, device type and device specific documents within NetBox.";
+    description = "Plugin designed to faciliate the storage of site, circuit, device type and device specific documents within NetBox";
     homepage = "https://github.com/jasonyates/netbox-documents";
+    changelog = "https://github.com/jasonyates/netbox-documents/releases/tag/${src.rev}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ felbinger ];
   };
 }

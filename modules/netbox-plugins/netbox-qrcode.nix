@@ -9,12 +9,12 @@
 }:
 buildPythonPackage rec {
   pname = "netbox-qrcode";
-  version = "0.0.11";
+  version = "0.0.13";
   pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-tLr4OOfUF91vuAJvV58evt6+VRQ5SFpxY2qV8Yqm7lc=";
+    hash = "sha256-Ij3GcJnVX+gLqhR+UMWQFMgBQqDLv/QW0Wqa7af1mok=";
   };
 
   nativeBuildInputs = [ setuptools ];
