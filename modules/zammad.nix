@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "support.${toString config.networking.fqdn}";
+      defaultText = "support.\${toString config.networking.fqdn}";
     };
     ports = {
       http = lib.mkOption {

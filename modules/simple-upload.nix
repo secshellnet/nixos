@@ -5,6 +5,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "upload.${toString config.networking.fqdn}";
+      defaultText = "upload.\${toString config.networking.fqdn}";
     };
   };
   config = lib.mkIf config.secshell.simple-upload.enable {

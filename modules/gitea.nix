@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "git.${toString config.networking.fqdn}";
+      defaultText = "git.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     useLocalDatabase = lib.mkOption {
@@ -36,6 +37,7 @@
       noReplyAddress = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = config.secshell.gitea.from;
+        defaultText = "config.secshell.gitea.from";
       };
     };
     database = {

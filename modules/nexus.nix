@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "nexus.${toString config.networking.fqdn}";
+      defaultText = "nexus.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
   };

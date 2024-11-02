@@ -4,22 +4,27 @@
     prometheus = lib.mkOption {
       type = lib.types.str;
       default = "prom.${toString config.networking.fqdn}";
+      defaultText = "prom.\${toString config.networking.fqdn}";
     };
     alertmanager = lib.mkOption {
       type = lib.types.str;
       default = "alerts.${toString config.networking.fqdn}";
+      defaultText = "alerts.\${toString config.networking.fqdn}";
     };
     pushgateway = lib.mkOption {
       type = lib.types.str;
       default = "pushgateway.${toString config.networking.fqdn}";
+      defaultText = "pushgateway.\${toString config.networking.fqdn}";
     };
     grafana = lib.mkOption {
       type = lib.types.str;
       default = "grafana.${toString config.networking.fqdn}";
+      defaultText = "grafana.\${toString config.networking.fqdn}";
     };
     loki = lib.mkOption {
       type = lib.types.str;
       default = "loki.${toString config.networking.fqdn}";
+      defaultText = "loki.\${toString config.networking.fqdn}";
     };
   };
   config = lib.mkIf config.secshell.monitoring.enable {

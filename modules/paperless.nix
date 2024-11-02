@@ -11,6 +11,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "paperless.${toString config.networking.fqdn}";
+      defaultText = "paperless.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     useLocalDatabase = lib.mkOption {

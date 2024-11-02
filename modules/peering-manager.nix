@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "peering-manager.${toString config.networking.fqdn}";
+      defaultText = "peering-manager.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     oidc = {
@@ -24,6 +25,7 @@
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.peering-manager.domain;
+        defaultText = "config.secshell.peering-manager.domain";
       };
     };
   };

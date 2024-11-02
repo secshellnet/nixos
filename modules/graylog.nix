@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "graylog.${toString config.networking.fqdn}";
+      defaultText = "graylog.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
   };

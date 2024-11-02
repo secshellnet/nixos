@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "unifi.${toString config.networking.fqdn}";
+      defaultText = "unifi.\${toString config.networking.fqdn}";
     };
   };
   config = lib.mkIf config.secshell.unifi.enable {

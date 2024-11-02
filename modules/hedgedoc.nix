@@ -5,6 +5,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "md.${toString config.networking.fqdn}";
+      defaultText = "md.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     useLocalDatabase = lib.mkOption {
@@ -37,6 +38,7 @@
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.hedgedoc.domain;
+        defaultText = "config.secshell.hedgedoc.domain";
       };
     };
   };

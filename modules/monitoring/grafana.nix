@@ -14,6 +14,7 @@
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.monitoring.domains.grafana;
+        defaultText = "config.secshell.monitoring.domains.grafana";
       };
     };
     useLocalDatabase = lib.mkOption {

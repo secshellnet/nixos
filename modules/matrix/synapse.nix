@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "synapse.${toString config.networking.fqdn}";
+      defaultText = "synapse.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     metrics_port = lib.mkOption {

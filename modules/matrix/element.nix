@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "element.${toString config.networking.fqdn}";
+      defaultText = "element.\${toString config.networking.fqdn}";
     };
   };
   config = lib.mkIf config.secshell.matrix.element.enable {

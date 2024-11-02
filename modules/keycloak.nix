@@ -10,6 +10,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "auth.${toString config.networking.fqdn}";
+      defaultText = "auth.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     useLocalDatabase = lib.mkOption {
