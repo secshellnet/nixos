@@ -11,6 +11,10 @@
       type = lib.types.str;
       default = "element.${toString config.networking.fqdn}";
       defaultText = "element.\${toString config.networking.fqdn}";
+      description = ''
+        The domain for the nginx vhost, which makes element accessible.
+        Note: A tls certificate will be issued using acme for this domain.
+      '';
     };
   };
   config = lib.mkIf config.secshell.matrix.element.enable {

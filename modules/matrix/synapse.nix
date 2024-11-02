@@ -11,13 +11,31 @@
       type = lib.types.str;
       default = "synapse.${toString config.networking.fqdn}";
       defaultText = "synapse.\${toString config.networking.fqdn}";
+      description = ''
+        The domain for the nginx vhost, which makes synapse accessible.
+        Note: A tls certificate will be issued using acme for this domain.
+      '';
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The port that is used internally to forward traffic from nginx to synapse.
+      '';
+    };
     metrics_port = lib.mkOption {
       type = lib.types.port;
       default = 9089;
+      description = ''
+        The port that is used internally to access prometheus metrics from synapse.
+      '';
     };
-    homeserver = lib.mkOption { type = lib.types.str; };
+    homeserver = lib.mkOption {
+      type = lib.types.str;
+      description = ''
+        The domain of the matrix synapse homeserver.
+        Note: This domain will be used in your matrix id: @user:domain.
+      '';
+    };
     oidc = lib.mkOption {
       type = lib.types.bool;
       default = false;

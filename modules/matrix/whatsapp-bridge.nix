@@ -5,10 +5,16 @@
     internal_port = lib.mkOption {
       type = lib.types.port;
       default = 29318;
+      description = ''
+        The port that is used internally to forward traffic from synapse to the bridge.
+      '';
     };
     adminUsername = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = lib.mkIf (!config.secshell.matrix.whatsapp.enable) null;
+      description = ''
+        The username of the matrix user, who should have admin privileges of this bridge.
+      '';
     };
   };
   config = lib.mkIf config.secshell.matrix.whatsapp.enable {
