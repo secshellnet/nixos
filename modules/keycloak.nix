@@ -72,7 +72,7 @@
       settings = {
         http-host = "127.0.0.1";
         https-port = config.secshell.keycloak.internal_port;
-        proxy = "edge"; # Enables communication through HTTP between the proxy and Keycloak.
+        proxy-headers = "forwarded"; # Enables communication through HTTP between the proxy and Keycloak.
 
         hostname = config.secshell.keycloak.domain;
         #hostname-strict = lib.mkIf (config.secshell.keycloak.admin.domain != "") false;
