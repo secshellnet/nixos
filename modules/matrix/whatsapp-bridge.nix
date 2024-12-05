@@ -42,6 +42,7 @@
 
       mautrix-whatsapp = {
         enable = true;
+        registerToSynapse = false;
         environmentFile = config.sops.templates."matrix/whatsapp-bridge/env".path;
         settings = {
           homeserver = {
