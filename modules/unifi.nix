@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs-unstable,
+  pkgs,
   ...
 }:
 {
@@ -16,7 +16,8 @@
   config = lib.mkIf config.secshell.unifi.enable {
     services.unifi = {
       enable = true;
-      unifiPackage = pkgs-unstable.unifi8;
+      unifiPackage = pkgs.unifi8;
+      mongodbPackage = pkgs.mongodb-7_0;
     };
 
     networking.firewall = {
