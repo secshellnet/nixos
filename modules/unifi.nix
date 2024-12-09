@@ -14,6 +14,11 @@
     };
   };
   config = lib.mkIf config.secshell.unifi.enable {
+    #services.mongodb ={
+    #  enable= true;
+    #  package = pkgs.mongodb-6_0;
+    #  dbpath = "/var/lib/unifi/";
+    #};
     services.unifi = {
       enable = true;
       unifiPackage = pkgs.unifi8;
