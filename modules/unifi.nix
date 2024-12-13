@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }:
 {
@@ -14,14 +15,9 @@
     };
   };
   config = lib.mkIf config.secshell.unifi.enable {
-    #services.mongodb ={
-    #  enable= true;
-    #  package = pkgs.mongodb-6_0;
-    #  dbpath = "/var/lib/unifi/";
-    #};
     services.unifi = {
       enable = true;
-      unifiPackage = pkgs.unifi8;
+      unifiPackage = pkgs-unstable.unifi8;
       mongodbPackage = pkgs.mongodb-7_0;
     };
 
