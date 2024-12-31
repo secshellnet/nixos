@@ -1,24 +1,25 @@
 {
   lib,
-  callPackage,
   buildPythonPackage,
-  fetchPypi,
+  fetchFromGitHub,
   setuptools,
-  netbox,
+  netbox
 }:
 buildPythonPackage rec {
   pname = "netbox-floorplan-plugin";
-  version = "0.3.4";
+  version = "0.5.0";
   pyproject = true;
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-3/ReEM6ZG5+B4HQmK/cfxUry9kyR4HuyPVvYEcFz14M=";
+  src = fetchFromGitHub {
+    owner = "netbox-community";
+    repo = "netbox-floorplan-plugin";
+    rev = version;
+    hash = "sha256-tN07cZKNBPraGnvKZlPEg0t8fusDkBc2S41M3f5q3kc=";
   };
 
   nativeBuildInputs = [ setuptools ];
 
-  checkInputs = [ netbox ];
+  nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
@@ -29,5 +30,6 @@ buildPythonPackage rec {
     homepage = "https://github.com/DanSheps/netbox-floorplan-plugin";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ felbinger ];
   };
 }
