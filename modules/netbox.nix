@@ -129,8 +129,8 @@
             plugins = ps.callPackage ./netbox-plugins { };
           in
           [
-            (lib.mkIf config.secshell.netbox.plugin.bgp plugins.netbox_bgp)
-            (lib.mkIf config.secshell.netbox.plugin.documents plugins.netbox_documents)
+            (lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
+            (lib.mkIf config.secshell.netbox.plugin.documents ps.netbox-documents)
             (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.netbox_floorplan)
             (lib.mkIf config.secshell.netbox.plugin.qrcode plugins.netbox_qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews plugins.netbox_topology_views)
