@@ -19,7 +19,7 @@
   httpcore,
   netbox,
   proxmoxer,
-  packaging
+  packaging,
 }:
 # TODO
 # ERROR Missing dependencies:

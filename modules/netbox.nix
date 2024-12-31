@@ -5,7 +5,7 @@
   ...
 }:
 {
-  # Note for initial installation / database initialization: systemd timeout is way to small to finish the whole setup. 
+  # Note for initial installation / database initialization: systemd timeout is way to small to finish the whole setup.
   # Run the deployment (or netbox systemd job) multiple times, until it works (arround 5 times required)
 
   options.secshell.netbox = {

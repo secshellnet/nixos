@@ -3,7 +3,7 @@
   buildPythonPackage,
   fetchFromGitHub,
   setuptools,
-  netbox
+  netbox,
 }:
 buildPythonPackage rec {
   pname = "netbox-floorplan-plugin";

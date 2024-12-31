@@ -50,14 +50,12 @@
           DO $$
           DECLARE password TEXT;
           BEGIN
-            ${
-              builtins.concatStringsSep "\n" (
-                lib.mapAttrsToList (name: passwordFile: ''
-                  password := trim(both from replace(pg_read_file('${passwordFile}'), E'\n', '''));
-                  EXECUTE format('ALTER ROLE "${name}" WITH PASSWORD '''%s''';', password);
-                '') cfg.userPasswords
-              )
-            }
+            ${builtins.concatStringsSep "\n" (
+              lib.mapAttrsToList (name: passwordFile: ''
+                password := trim(both from replace(pg_read_file('${passwordFile}'), E'\n', '''));
+                EXECUTE format('ALTER ROLE "${name}" WITH PASSWORD '''%s''';', password);
+              '') cfg.userPasswords
+            )}
           END $$;
         EOF
       '';
