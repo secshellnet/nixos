@@ -50,6 +50,14 @@
         type = lib.types.listOf lib.types.str;
         default = [ ];
       };
+      wireguard = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+      };
+      frr = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+      };
     };
 
     alertmanagerDefaultEmailReceiver = lib.mkOption {
@@ -100,6 +108,28 @@
         {
           job_name = "other_exporter";
           static_configs = [ { targets = config.secshell.monitoring.exporter.other; } ];
+          relabel_configs = [
+            {
+              source_labels = [ "__address__" ];
+              regex = "([^:]+):\\d+";
+              target_label = "instance";
+            }
+          ];
+        }
+        {
+          job_name = "wireguard_exporter";
+          static_configs = [ { targets = config.secshell.monitoring.exporter.wireguard; } ];
+          relabel_configs = [
+            {
+              source_labels = [ "__address__" ];
+              regex = "([^:]+):\\d+";
+              target_label = "instance";
+            }
+          ];
+        }
+        {
+          job_name = "frr_exporter";
+          static_configs = [ { targets = config.secshell.monitoring.exporter.frr; } ];
           relabel_configs = [
             {
               source_labels = [ "__address__" ];
