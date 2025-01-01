@@ -143,7 +143,7 @@
               target_label = "__param_target";
             }
             {
-              source_labels = [ "__param_target__" ];
+              source_labels = [ "__param_target" ];
               target_label = "instance";
             }
             {
