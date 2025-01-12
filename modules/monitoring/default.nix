@@ -28,6 +28,10 @@
       type = lib.types.port;
       default = 9115;
     };
+    pve_exporter.internal_port = lib.mkOption {
+      type = lib.types.port;
+      default = 9221;
+    };
 
     exporter = {
       node = lib.mkOption {
@@ -71,7 +75,7 @@
   };
 
   config = lib.mkIf config.secshell.monitoring.enable {
-    sops.templates."monitoring/pve-exporter.conf" = {};
+    sops.templates."monitoring/pve-exporter.conf" = { };
 
     services.prometheus = {
       enable = true;
@@ -164,7 +168,7 @@
             }
             {
               target_label = "__address__";
-              replacement = "127.0.0.1:9221";
+              replacement = "${toString config.networking.fqdn}:${toString config.services.prometheus.exporters.pve.port}";
             }
           ];
         }
@@ -267,14 +271,19 @@
           port = config.secshell.monitoring.node_exporter.internal_port;
         };
         blackbox = {
-          enable = true;
+          enable = (
+            config.secshell.monitoring.exporter.blackbox_icmp != [ ]
+            || config.secshell.monitoring.exporter.blackbox_http != [ ]
+          );
           configFile = ./blackbox.yml;
           listenAddress = "127.0.0.2";
           port = config.secshell.monitoring.blackbox_exporter.internal_port;
         };
         pve = {
-          enable = config.secshell.monitoring.exporter.pve != [];
+          enable = config.secshell.monitoring.exporter.pve != [ ];
           configFile = config.sops.templates."monitoring/pve-exporter.conf".path;
+          listenAddress = "127.0.0.2";
+          port = config.secshell.monitoring.pve_exporter.internal_port;
         };
       };
     };
