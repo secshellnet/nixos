@@ -58,6 +58,10 @@
         type = lib.types.listOf lib.types.str;
         default = [ ];
       };
+      pve = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+      };
     };
 
     alertmanagerDefaultEmailReceiver = lib.mkOption {
@@ -135,6 +139,30 @@
               source_labels = [ "__address__" ];
               regex = "([^:]+):\\d+";
               target_label = "instance";
+            }
+          ];
+        }
+        {
+          job_name = "pve_exporter";
+          static_configs = [ { targets = config.secshell.monitoring.exporter.pve; } ];
+          metrics_path = "/pve";
+          params = {
+            module = [ "default" ];
+            cluster = [ "1" ];
+            node = [ "1" ];
+          };
+          relabel_configs = [
+            {
+              source_labels = [ "__address__" ];
+              target_label = "__param_target";
+            }
+            {
+              source_labels = [ "__param_target" ];
+              target_label = "instance";
+            }
+            {
+              target_label = "__address__";
+              replacement = "127.0.0.1:9221";
             }
           ];
         }
