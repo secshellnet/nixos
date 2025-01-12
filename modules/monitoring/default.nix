@@ -71,6 +71,8 @@
   };
 
   config = lib.mkIf config.secshell.monitoring.enable {
+    sops.templates."monitoring/pve-exporter.conf" = {};
+
     services.prometheus = {
       enable = true;
       port = config.secshell.monitoring.prometheus.internal_port;
@@ -269,6 +271,10 @@
           configFile = ./blackbox.yml;
           listenAddress = "127.0.0.2";
           port = config.secshell.monitoring.blackbox_exporter.internal_port;
+        };
+        pve = {
+          enable = config.secshell.monitoring.exporter.pve != [];
+          configFile = config.sops.templates."monitoring/pve-exporter.conf".path;
         };
       };
     };
