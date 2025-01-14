@@ -72,6 +72,7 @@
           auth_url = "https://${config.secshell.monitoring.grafana.oidc.domain}/realms/${config.secshell.monitoring.grafana.oidc.realm}/protocol/openid-connect/auth";
           token_url = "https://${config.secshell.monitoring.grafana.oidc.domain}/realms/${config.secshell.monitoring.grafana.oidc.realm}/protocol/openid-connect/token";
           api_url = "https://${config.secshell.monitoring.grafana.oidc.domain}/realms/${config.secshell.monitoring.grafana.oidc.realm}/protocol/openid-connect/userinfo";
+          role_attribute_path = "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'";
         };
         database =
           {
