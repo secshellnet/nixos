@@ -134,7 +134,16 @@
           in
           [
             (lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
-            (lib.mkIf config.secshell.netbox.plugin.documents ps.netbox-documents)
+            (lib.mkIf config.secshell.netbox.plugin.documents (
+              ps.netbox-documents.overridePythonAttrs {
+                dependencies = [
+                 (ps.drf-extra-fields.overridePythonAttrs (previous: {
+                   dependencies = previous.dependencies ++ [ ps.pytz ];
+                   doCheck = false;
+                 }))
+                ];
+              }
+            ))
             (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.netbox_floorplan)
             (lib.mkIf config.secshell.netbox.plugin.qrcode plugins.netbox_qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews plugins.netbox_topology_views)
