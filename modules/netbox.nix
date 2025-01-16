@@ -60,6 +60,7 @@
       qrcode = lib.mkEnableOption "netbox qrcode plugin";
       topologyViews = lib.mkEnableOption "netbox topology views plugin";
       proxbox = lib.mkEnableOption "netbox proxbox plugin";
+      interface-synchronization = lib.mkEnableOption "netbox interface-synchronization plugin";
     };
   };
   config = lib.mkIf config.secshell.netbox.enable {
@@ -120,6 +121,7 @@
               (lib.mkIf config.secshell.netbox.plugin.qrcode "netbox_qrcode")
               (lib.mkIf config.secshell.netbox.plugin.topologyViews "netbox_topology_views")
               #(lib.mkIf config.secshell.netbox.plugin.proxbox "netbox_proxbox")
+              (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
             ];
           };
 
@@ -135,6 +137,7 @@
             (lib.mkIf config.secshell.netbox.plugin.qrcode plugins.netbox_qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews plugins.netbox_topology_views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox_proxbox)
+            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization plugins.netbox_interface_synchronization)
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
