@@ -23,7 +23,9 @@ buildPythonPackage rec {
 
   build-system = [ setuptools ];
 
-  dependencies = [ napalm ];
+  dependencies = [
+    napalm
+  ];
 
   nativeCheckInputs = [ netbox ];
 
