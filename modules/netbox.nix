@@ -139,10 +139,10 @@
             (lib.mkIf config.secshell.netbox.plugin.documents (
               ps.netbox-documents.overridePythonAttrs {
                 dependencies = [
-                 (ps.drf-extra-fields.overridePythonAttrs (previous: {
-                   dependencies = previous.dependencies ++ [ ps.pytz ];
-                   doCheck = false;
-                 }))
+                  (ps.drf-extra-fields.overridePythonAttrs (previous: {
+                    dependencies = previous.dependencies ++ [ ps.pytz ];
+                    doCheck = false;
+                  }))
                 ];
               }
             ))
@@ -152,11 +152,11 @@
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox_proxbox)
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization plugins.netbox_interface_synchronization)
             (lib.mkIf config.secshell.netbox.plugin.dns plugins.netbox_dns)
-            (lib.mkIf config.secshell.netbox.plugin.napalm
-              (plugins.netbox_napalm_plugin.overridePythonAttrs (previous: {
+            (lib.mkIf config.secshell.netbox.plugin.napalm (
+              plugins.netbox_napalm_plugin.overridePythonAttrs (previous: {
                 dependencies = previous.dependencies ++ [ (ps.callPackage ./netbox-plugins/napalm-ros.nix { }) ];
-              }))
-            )
+              })
+            ))
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
