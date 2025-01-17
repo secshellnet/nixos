@@ -6,4 +6,5 @@
   netbox_proxbox = callPackage ./netbox-proxbox.nix { };
   netbox_interface_synchronization = callPackage ./netbox-interface-synchronization.nix { };
   netbox_dns = callPackage ./netbox-dns.nix { };
+  netbox_napalm_plugin = callPackage ./netbox-napalm-plugin.nix { };
 }

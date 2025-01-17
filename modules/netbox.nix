@@ -62,6 +62,7 @@
       proxbox = lib.mkEnableOption "netbox proxbox plugin";
       interface-synchronization = lib.mkEnableOption "netbox interface-synchronization plugin";
       dns = lib.mkEnableOption "netbox dns plugin";
+      napalm = lib.mkEnableOption "netbox napalm plugin";
     };
   };
   config = lib.mkIf config.secshell.netbox.enable {
@@ -124,6 +125,7 @@
               #(lib.mkIf config.secshell.netbox.plugin.proxbox "netbox_proxbox")
               (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
               (lib.mkIf config.secshell.netbox.plugin.dns "netbox_dns")
+              (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
             ];
           };
 
@@ -150,6 +152,7 @@
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox_proxbox)
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization plugins.netbox_interface_synchronization)
             (lib.mkIf config.secshell.netbox.plugin.dns plugins.netbox_dns)
+            (lib.mkIf config.secshell.netbox.plugin.napalm plugins.netbox_napalm_plugin)
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
