@@ -21,12 +21,9 @@
   proxmoxer,
   packaging,
 }:
-# TODO
-# ERROR Missing dependencies:
-#   pynetbox, packaging<24.0
 buildPythonPackage rec {
   pname = "netbox-proxbox";
-  version = "0.0.5";
+  version = "0.0.5"; # incompatible with netbox 4.x, waiting for https://github.com/netdevopsbr/netbox-proxbox/issues/176
   pyproject = true;
 
   src = fetchFromGitHub {
@@ -57,13 +54,20 @@ buildPythonPackage rec {
     packaging
   ];
 
-  checkInputs = [ netbox ];
+  nativeCheckInputs = [ netbox ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
+
+  pythonImportsCheck = [ "netbox_proxbox" ];
 
   meta = {
-    description = "Netbox Plugin for integration between Proxmox and Netbox.";
+    description = "Netbox Plugin for integration between Proxmox and Netbox";
     homepage = "https://github.com/netdevopsbr/netbox-proxbox";
     changelog = "https://github.com/netdevopsbr/netbox-proxbox/releases/tag/${src.rev}";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ felbinger ];
   };
 }
