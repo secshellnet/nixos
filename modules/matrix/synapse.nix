@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 {
@@ -63,7 +62,7 @@
     };
     systemd.services.postgresql.postStart =
       let
-        inherit (config.services.matrix-synapse.settings.database.args) database user;
+        inherit (config.services.matrix-synapse.settings.database.args) database;
       in
       lib.mkAfter ''
         $PSQL -tAc "SELECT 1 FROM pg_database WHERE datname = 'matrix-synapse'" | grep -q 1 || $PSQL -tAc 'CREATE DATABASE "matrix-synapse" WITH OWNER "matrix-synapse" TEMPLATE template0 LC_COLLATE = "C" LC_CTYPE = "C"'
