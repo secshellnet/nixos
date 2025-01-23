@@ -146,7 +146,7 @@
                 ];
               }
             ))
-            (lib.mkIf config.secshell.netbox.plugin.floorplan plugins.netbox_floorplan)
+            (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
             (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox_proxbox)
