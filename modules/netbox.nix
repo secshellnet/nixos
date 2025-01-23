@@ -149,7 +149,7 @@
             (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
             (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
-            #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox_proxbox)
+            #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization ps.netbox-interface-synchronization)
             (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-plugin-dns)
             (lib.mkIf config.secshell.netbox.plugin.napalm (

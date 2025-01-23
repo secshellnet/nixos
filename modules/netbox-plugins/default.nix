@@ -1,4 +1,4 @@
 { callPackage }:
 {
-  netbox_proxbox = callPackage ./netbox-proxbox.nix { };
+  netbox-proxbox = callPackage ./netbox-proxbox.nix { };
 }
