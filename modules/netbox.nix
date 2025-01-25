@@ -151,7 +151,7 @@
             (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization ps.netbox-interface-synchronization)
-            (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-plugin-dns)
+            (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-dns)
             (lib.mkIf config.secshell.netbox.plugin.napalm (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
                 dependencies = previous.dependencies ++ [ ps.napalm-ros ];
