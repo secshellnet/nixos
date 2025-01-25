@@ -47,6 +47,7 @@
 
           WOODPECKER_GITEA = "true";
           WOODPECKER_GITEA_URL = config.services.gitea.settings.server.ROOT_URL;
+          WOODPECKER_AUTHENTICATE_PUBLIC_REPOS = "true";
         };
         environmentFile = config.sops.templates."woodpecker/environment".path;
       };
