@@ -141,7 +141,12 @@
                 dependencies = [
                   (ps.drf-extra-fields.overridePythonAttrs (previous: {
                     dependencies = previous.dependencies ++ [ ps.pytz ];
-                    doCheck = false;
+                    disabledTests = [
+                      "test_create"
+                      "test_create_with_base64_prefix"
+                      "test_create_with_webp_image"
+                      "test_remove_with_empty_string"
+                    ];
                   }))
                 ];
               }
