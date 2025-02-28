@@ -140,7 +140,7 @@
               ps.netbox-documents.overridePythonAttrs {
                 dependencies = [
                   (ps.drf-extra-fields.overridePythonAttrs (previous: {
-                    dependencies = previous.dependencies ++ [ ps.pytz ];
+                    nativeCheckInputs = previous.nativeCheckInputs ++ [ ps.pytz ];
                     disabledTests = [
                       "test_create"
                       "test_create_with_base64_prefix"
