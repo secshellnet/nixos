@@ -59,7 +59,7 @@
           bridge = {
             displayname_template = "{{or .FullName .PushName .Phone}} (WA)";
             permissions = {
-              "*" = "relaybot";
+              "*" = "relay";
               "@${config.secshell.matrix.whatsapp.adminUsername}:${config.secshell.matrix.homeserver}" = "admin";
             };
           };
