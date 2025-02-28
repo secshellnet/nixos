@@ -82,14 +82,14 @@
         enable_registration = lib.mkDefault false;
         password_config.enabled = !config.secshell.matrix.oidc; # allow login using username/password (disable for oidc)
         max_upload_size = "500M";
-        #app_service_config_files =
-        #  [ ]
-        #  ++ (lib.optionals config.secshell.matrix.whatsapp.enable [
-        #    "/run/secrets/matrix/whatsapp-bridge/registration"
-        #  ])
-        #  ++ (lib.optionals config.secshell.matrix.telegram.enable [
-        #    "/run/secrets/matrix/telegram-bridge/registration"
-        #  ]);
+        app_service_config_files =
+          [ ]
+          ++ (lib.optionals config.secshell.matrix.whatsapp.enable [
+            "/run/secrets/matrix/whatsapp-bridge/registration"
+          ])
+          ++ (lib.optionals config.secshell.matrix.telegram.enable [
+            "/run/secrets/matrix/telegram-bridge/registration"
+          ]);
 
         listeners =
           [
