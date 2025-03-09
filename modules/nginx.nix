@@ -9,10 +9,18 @@
     useStagingEnvironment = lib.mkOption {
       type = lib.types.bool;
       default = false;
+      description = ''
+        ::: {.warning}
+        The option `secshell.nginx.useStagingEnvironment` is deprecated. Use `secshell.acme.useStagingEnvironment` instead.
+      '';
     };
     acmeMail = lib.mkOption {
       type = lib.types.str;
       default = "acme@secshell.net";
+      description = ''
+        ::: {.warning}
+        The option `secshell.nginx.acmeMail` is deprecated. Use `secshell.acme.acmeMail` instead.
+      '';
     };
     openFirewall = lib.mkOption {
       type = lib.types.bool;
@@ -44,13 +52,6 @@
     };
   };
   config = lib.mkIf config.services.nginx.enable {
-    sops = {
-      secrets."cloudflareToken" = { };
-      templates."credentials".content = ''
-        CF_DNS_API_TOKEN=${config.sops.placeholder."cloudflareToken"}
-      '';
-    };
-
     services.nginx =
       let
         modsecurity_crs = pkgs.fetchFromGitHub {
@@ -126,16 +127,11 @@
     ];
 
     users.users.nginx.extraGroups = [ "acme" ];
-    security.acme = {
-      acceptTerms = true;
-      defaults = {
-        email = config.secshell.nginx.acmeMail;
-        server = lib.mkIf config.secshell.nginx.useStagingEnvironment "https://acme-staging-v02.api.letsencrypt.org/directory";
-        keyType = "ec384";
-        dnsProvider = "cloudflare";
-        dnsResolver = "1.1.1.1:53"; # required to fix subdomain lookups for cloudflare
-        credentialsFile = config.sops.templates."credentials".path;
-      };
+
+    # fixup renamed options
+    secshell.acme = {
+      acmeMail = config.secshell.nginx.acmeMail;
+      useStagingEnvironment = config.secshell.nginx.useStagingEnvironment;
     };
   };
 }

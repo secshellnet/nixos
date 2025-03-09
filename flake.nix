@@ -27,6 +27,7 @@
             ./modules/filebeat.nix
             ./modules/hardening.nix
             ./modules/nginx.nix
+            ./modules/acme.nix
             ./modules/postgres.nix
             ./modules/user.nix
             ./modules/bind.nix
