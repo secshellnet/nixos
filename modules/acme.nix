@@ -13,6 +13,10 @@
       type = lib.types.str;
       default = "acme@secshell.net";
     };
+    renewalNetNs = lib.mkOption {
+      type = with lib.types; nullOr str;
+      default = null;
+    };
   };
   config = lib.mkIf ((builtins.length (builtins.attrNames config.security.acme.certs)) > 0) {
     sops = {
@@ -33,5 +37,15 @@
         credentialsFile = config.sops.templates."credentials".path;
       };
     };
+
+    # map over acme certificates and bind services to correct network namespace
+    systemd.services = lib.mkIf (config.secshell.acme.renewalNetNs != null) (
+      builtins.listToAttrs (
+        map (service: {
+          name = service;
+          value.serviceConfig.NetworkNamespacePath = "/var/run/netns/${config.secshell.acme.renewalNetNs}";
+        }) ((map (domain: "acme-${domain}") (lib.attrNames config.security.acme.certs)))
+      )
+    );
   };
 }
