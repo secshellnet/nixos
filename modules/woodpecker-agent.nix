@@ -49,11 +49,13 @@ in
 
     # Adjust runner service for nix usage
     systemd.services.woodpecker-agent-docker = {
-      after = [
-        "podman.socket"
-      ] ++ (lib.optionals cfg.enableServer [
-        "woodpecker-server.service"
-      ]);
+      after =
+        [
+          "podman.socket"
+        ]
+        ++ (lib.optionals cfg.enableServer [
+          "woodpecker-server.service"
+        ]);
       # might break deployment
       restartIfChanged = false;
       serviceConfig = {

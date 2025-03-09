@@ -151,17 +151,27 @@
                 ];
               }
             ))
-            (lib.mkIf config.secshell.netbox.plugin.floorplan (ps.netbox-floorplan-plugin.overridePythonAttrs (previous: {
-              version = "0.5.0";
-              src = previous.src.override { tag = "0.5.0"; hash = "sha256-tN07cZKNBPraGnvKZlPEg0t8fusDkBc2S41M3f5q3kc="; };
-            })))
+            (lib.mkIf config.secshell.netbox.plugin.floorplan (
+              ps.netbox-floorplan-plugin.overridePythonAttrs (previous: {
+                version = "0.5.0";
+                src = previous.src.override {
+                  tag = "0.5.0";
+                  hash = "sha256-tN07cZKNBPraGnvKZlPEg0t8fusDkBc2S41M3f5q3kc=";
+                };
+              })
+            ))
             (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
-            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization (ps.netbox-interface-synchronization.overridePythonAttrs (previous: {
-              version = "4.1.6";
-              src = previous.src.override { tag = "4.1.6"; hash = "sha256-scsNigSqKWeauAyIDxDzwbgtl3rM5CGBCCmVj/98w84="; };
-            })))
+            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization (
+              ps.netbox-interface-synchronization.overridePythonAttrs (previous: {
+                version = "4.1.6";
+                src = previous.src.override {
+                  tag = "4.1.6";
+                  hash = "sha256-scsNigSqKWeauAyIDxDzwbgtl3rM5CGBCCmVj/98w84=";
+                };
+              })
+            ))
             (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-dns)
             (lib.mkIf config.secshell.netbox.plugin.napalm (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
