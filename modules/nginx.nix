@@ -130,8 +130,8 @@
 
     # fixup renamed options
     secshell.acme = {
-      acmeMail = config.secshell.nginx.acmeMail;
-      useStagingEnvironment = config.secshell.nginx.useStagingEnvironment;
+      acmeMail = lib.mkDefault config.secshell.nginx.acmeMail;
+      useStagingEnvironment = lib.mkDefault config.secshell.nginx.useStagingEnvironment;
     };
   };
 }
