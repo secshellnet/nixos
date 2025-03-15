@@ -21,6 +21,7 @@ Adding `portal.example.com` to the directory structure looks like this:
 │           └── portal
 │               ├── configuration.nix
 │               ├── hardware-configuration.nix
+│               ├── networking.nix
 │               └── secrets.yaml
 └── modules
     └── default.nix
@@ -53,7 +54,7 @@ be enabled.
     users = [ "alice" "bob" ];
   };
 
-  system.stateVersion = "24.05";
+  system.stateVersion = "24.11";
 }
 ```
 
@@ -166,6 +167,9 @@ be enabled.
         packages = with pkgs; [
           sops
           ssh-to-age
+          nixos-anywhere
+          nixfmt-rfc-style
+          deadnix
         ] ++ [
           deploy-sh.packages.${system}.default
         ];
