@@ -60,6 +60,7 @@
       qrcode = lib.mkEnableOption "netbox qrcode plugin";
       topologyViews = lib.mkEnableOption "netbox topology views plugin";
       proxbox = lib.mkEnableOption "netbox proxbox plugin";
+      contract = lib.mkEnableOption "netbox contract plugin";
       interface-synchronization = lib.mkEnableOption "netbox interface-synchronization plugin";
       dns = lib.mkEnableOption "netbox dns plugin";
       napalm = lib.mkEnableOption "netbox napalm plugin";
@@ -123,6 +124,7 @@
               (lib.mkIf config.secshell.netbox.plugin.qrcode "netbox_qrcode")
               (lib.mkIf config.secshell.netbox.plugin.topologyViews "netbox_topology_views")
               #(lib.mkIf config.secshell.netbox.plugin.proxbox "netbox_proxbox")
+              (lib.mkIf config.secshell.netbox.plugin.contract "netbox_contract")
               (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
               (lib.mkIf config.secshell.netbox.plugin.dns "netbox_dns")
               (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
@@ -163,6 +165,7 @@
             (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
+            (lib.mkIf config.secshell.netbox.plugin.contract plugins.netbox-contract)
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization (
               ps.netbox-interface-synchronization.overridePythonAttrs (previous: {
                 version = "4.1.6";
