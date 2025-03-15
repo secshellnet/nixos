@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }:
 {
@@ -86,6 +87,7 @@
 
       netbox = {
         enable = true;
+        package = pkgs-unstable.netbox;
         secretKeyFile = config.sops.secrets."netbox/secretKey".path;
         port = config.secshell.netbox.internal_port;
         listenAddress = "127.0.0.1";
@@ -137,7 +139,16 @@
             plugins = ps.callPackage ./netbox-plugins { };
           in
           [
-            (lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
+            (lib.mkIf config.secshell.netbox.plugin.bgp (
+              ps.netbox-bgp.overridePythonAttrs (previous: {
+                version = "0.15.0";
+                src = previous.src.override {
+                  tag = "0.15.0";
+                  hash = "sha256-2PJD/6WjFQRfreK2kpWIYXb5r4noJBa8zejK5r+A+xA=";
+                };
+              })
+            ))
+
             (lib.mkIf config.secshell.netbox.plugin.documents (
               ps.netbox-documents.overridePythonAttrs {
                 dependencies = [
@@ -153,29 +164,38 @@
                 ];
               }
             ))
-            (lib.mkIf config.secshell.netbox.plugin.floorplan (
-              ps.netbox-floorplan-plugin.overridePythonAttrs (previous: {
-                version = "0.5.0";
+            (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
+            (lib.mkIf config.secshell.netbox.plugin.qrcode (
+              ps.netbox-qrcode.overridePythonAttrs (previous: {
+                version = "0.0.17";
                 src = previous.src.override {
-                  tag = "0.5.0";
-                  hash = "sha256-tN07cZKNBPraGnvKZlPEg0t8fusDkBc2S41M3f5q3kc=";
+                  tag = "v0.0.17";
+                  hash = "sha256-uJMGO9LXvaByfvrjNaPyY89Uaf71k1ku+/bfqc4npiQ=";
                 };
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
-            (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
+
+            (lib.mkIf config.secshell.netbox.plugin.topologyViews (
+              ps.netbox-topology-views.overridePythonAttrs (previous: {
+                version = "4.2.0";
+                src = previous.src.override {
+                  tag = "v4.2.0";
+                  hash = "sha256-aNeOAwO/5qEfecq7WM8oJB7gw/Ee8kaUH/S4loPhlY4=";
+                };
+              })
+            ))
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
             (lib.mkIf config.secshell.netbox.plugin.contract plugins.netbox-contract)
-            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization (
-              ps.netbox-interface-synchronization.overridePythonAttrs (previous: {
-                version = "4.1.6";
+            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization ps.netbox-interface-synchronization)
+            (lib.mkIf config.secshell.netbox.plugin.dns (
+              ps.netbox-dns.overridePythonAttrs (previous: {
+                version = "1.2.6";
                 src = previous.src.override {
-                  tag = "4.1.6";
-                  hash = "sha256-scsNigSqKWeauAyIDxDzwbgtl3rM5CGBCCmVj/98w84=";
+                  tag = "1.2.6";
+                  hash = "sha256-jpxKq5dASyPlbmVzm7it65g8eZ78XuXKdpJKKhzx614=";
                 };
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-dns)
             (lib.mkIf config.secshell.netbox.plugin.napalm (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
                 dependencies = previous.dependencies ++ [ ps.napalm-ros ];
