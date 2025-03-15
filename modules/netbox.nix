@@ -65,6 +65,7 @@
       interface-synchronization = lib.mkEnableOption "netbox interface-synchronization plugin";
       dns = lib.mkEnableOption "netbox dns plugin";
       napalm = lib.mkEnableOption "netbox napalm plugin";
+      reorder-rack = lib.mkEnableOption "netbox reorder-rack plugin";
     };
   };
   config = lib.mkIf config.secshell.netbox.enable {
@@ -130,6 +131,7 @@
               (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
               (lib.mkIf config.secshell.netbox.plugin.dns "netbox_dns")
               (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
+              (lib.mkIf config.secshell.netbox.plugin.reorder-rack "netbox_reorder_rack")
             ];
           };
 
@@ -201,6 +203,7 @@
                 dependencies = previous.dependencies ++ [ ps.napalm-ros ];
               })
             ))
+            (lib.mkIf config.secshell.netbox.plugin.reorder-rack ps.netbox-reorder-rack)
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
