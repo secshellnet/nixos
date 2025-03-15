@@ -67,6 +67,8 @@
       napalm = lib.mkEnableOption "netbox napalm plugin";
       reorder-rack = lib.mkEnableOption "netbox reorder-rack plugin";
       prometheus-sd = lib.mkEnableOption "netbox prometheus-sd plugin";
+      kea = lib.mkEnableOption "netbox kea plugin";
+      attachments = lib.mkEnableOption "netbox attachments plugin";
     };
   };
   config = lib.mkIf config.secshell.netbox.enable {
@@ -134,6 +136,8 @@
               (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
               (lib.mkIf config.secshell.netbox.plugin.reorder-rack "netbox_reorder_rack")
               (lib.mkIf config.secshell.netbox.plugin.prometheus-sd "netbox_prometheus_sd")
+              (lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
+              (lib.mkIf config.secshell.netbox.plugin.attachments "netbox_attachments")
             ];
           };
 
@@ -207,6 +211,8 @@
             ))
             (lib.mkIf config.secshell.netbox.plugin.reorder-rack ps.netbox-reorder-rack)
             (lib.mkIf config.secshell.netbox.plugin.prometheus-sd ps.netbox-plugin-prometheus-sd)
+            (lib.mkIf config.secshell.netbox.plugin.kea plugins.netbox-kea)
+            (lib.mkIf config.secshell.netbox.plugin.attachments plugins.netbox-attachments)
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
