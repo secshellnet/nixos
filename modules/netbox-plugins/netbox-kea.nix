@@ -34,15 +34,20 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [
-    #pytestCheckHook
+    pytestCheckHook
     netbox
-    #types-requests
-    #mypy
-    #pytest-playwright # TODO RELAX
-    #pynetbox # TODO RELAX
-    #django-stubs
-    #ruff
+    types-requests
+    mypy
+    pytest-playwright
+    pynetbox
+    django-stubs
+    ruff
   ];
+
+  #pythonRelaxDeps = [
+  #  "pytest-playwright"
+  #  "pynetbox"
+  #];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
@@ -59,4 +64,3 @@ buildPythonPackage rec {
     maintainers = with lib.maintainers; [ felbinger ];
   };
 }
-
