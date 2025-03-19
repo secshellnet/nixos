@@ -25,6 +25,7 @@
             # Other
             ./modules/containers.nix
             ./modules/filebeat.nix
+            ./modules/firewall.nix
             ./modules/hardening.nix
             ./modules/nginx.nix
             ./modules/acme.nix
