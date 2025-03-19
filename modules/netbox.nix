@@ -173,15 +173,7 @@
               }
             ))
             (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
-            (lib.mkIf config.secshell.netbox.plugin.qrcode (
-              ps.netbox-qrcode.overridePythonAttrs (previous: {
-                version = "0.0.17";
-                src = previous.src.override {
-                  tag = "v0.0.17";
-                  hash = "sha256-uJMGO9LXvaByfvrjNaPyY89Uaf71k1ku+/bfqc4npiQ=";
-                };
-              })
-            ))
+            (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
             (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
             (lib.mkIf config.secshell.netbox.plugin.contract plugins.netbox-contract)
