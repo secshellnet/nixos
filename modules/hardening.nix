@@ -67,7 +67,11 @@ in
         "dev.tty.ldisc_autoload" = lib.mkDefault 0;
         "fs.protected_fifos" = lib.mkDefault 2;
         "fs.protected_regular" = lib.mkDefault 2;
+        "fs.protected_hardlinks" = lib.mkDefault 1;
+        "fs.protected_symlinks" = lib.mkDefault 1;
         "fs.suid_dumpable" = lib.mkDefault 0;
+        "kernel.yama.ptrace_scope" = lib.mkDefault 3;
+        "kernel.randomize_va_space" = lib.mkDefault 2;
         "kernel.dmesg_restrict" = lib.mkDefault 1;
         "kernel.perf_event_paranoid" = lib.mkDefault 3;
         "kernel.sysrq" = lib.mkDefault 0;
