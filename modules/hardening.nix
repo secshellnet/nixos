@@ -59,6 +59,18 @@ in
             # Unused interfaces
             "thunderbolt"
             "firewire-core"
+
+            # Firewire
+            "sbp2"
+            "ohci1394"
+            "firewire-ohci"
+
+            # Wifi
+            "ath"
+            "iwlegacy"
+            "iwlwifi"
+            "mwifiex"
+            "rtlwifi"
           ];
         in
         lib.concatStringsSep "\n" (map (kmod: "install ${kmod} ${cmd}") modules);
