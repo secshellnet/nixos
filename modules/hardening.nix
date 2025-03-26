@@ -21,7 +21,12 @@ in
 
   config = lib.mkIf config.secshell.hardening {
     nix.settings.allowed-users = [ "@wheel" ];
-    security.sudo.execWheelOnly = true;
+    security.sudo = {
+      execWheelOnly = true;
+      extraConfig = ''
+        Defaults logfile="/var/log/sudo.log"
+      '';
+    };
 
     # weird logrotate issue during config check
     # cannot find name for group ID 30000
