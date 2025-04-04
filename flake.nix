@@ -16,6 +16,7 @@
             ./modules/nexus.nix
             ./modules/paperless.nix
             ./modules/peering-manager.nix
+            ./modules/radicale.nix
             ./modules/simple-upload.nix
             ./modules/unifi.nix
             ./modules/vaultwarden.nix
