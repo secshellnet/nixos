@@ -35,5 +35,6 @@
           ];
         };
       };
+      lib = args: import ./lib args;
     };
 }
