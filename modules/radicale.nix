@@ -9,6 +9,7 @@
     domain = lib.mkOption {
       type = lib.types.str;
       default = "dav.${toString config.networking.fqdn}";
+      defaultText = "dav.\${toString config.networking.fqdn}";
     };
     internal_port = lib.mkOption { type = lib.types.port; };
   };
