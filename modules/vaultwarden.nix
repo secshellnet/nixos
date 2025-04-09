@@ -104,7 +104,6 @@
           DOMAIN = "https://${config.secshell.vaultwarden.domain}";
 
           DATABASE_URL = lib.mkIf config.secshell.vaultwarden.useLocalDatabase "postgresql:///vaultwarden?host=/run/postgresql";
-          DATA_FOLDER = "/var/lib/bitwarden_rs";
 
           SIGNUPS_ALLOWED = false;
           INVITATIONS_ALLOWED = false;
