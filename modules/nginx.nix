@@ -42,11 +42,11 @@
         default = 1;
       };
       pre = lib.mkOption {
-        type = lib.types.string;
+        type = lib.types.lines;
         default = "";
       };
       post = lib.mkOption {
-        type = lib.types.string;
+        type = lib.types.lines;
         default = "";
       };
       preFile = lib.mkOption {
