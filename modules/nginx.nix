@@ -41,13 +41,21 @@
         type = lib.types.int;
         default = 1;
       };
+      pre = lib.mkOption {
+        type = lib.types.string;
+        default = "";
+      };
+      post = lib.mkOption {
+        type = lib.types.string;
+        default = "";
+      };
       preFile = lib.mkOption {
         type = lib.types.path;
-        default = pkgs.writeText "modsecurity_pre.conf" "";
+        default = pkgs.writeText "modsecurity_pre.conf" config.secshell.nginx.modsecurity.pre;
       };
       postFile = lib.mkOption {
         type = lib.types.path;
-        default = pkgs.writeText "modsecurity_post.conf" "";
+        default = pkgs.writeText "modsecurity_post.conf" config.secshell.nginx.modsecurity.post;
       };
     };
   };
