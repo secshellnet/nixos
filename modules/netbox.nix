@@ -193,10 +193,10 @@
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization ps.netbox-interface-synchronization)
             (lib.mkIf config.secshell.netbox.plugin.dns (
               ps.netbox-dns.overridePythonAttrs (previous: {
-                version = "1.2.6";
+                version = "1.2.7";
                 src = previous.src.override {
-                  tag = "1.2.6";
-                  hash = "sha256-jpxKq5dASyPlbmVzm7it65g8eZ78XuXKdpJKKhzx614=";
+                  tag = "1.2.7";
+                  hash = "sha256-l0jPn4dyUHm/E8tmSpmSXkSRa5dsD7ap8Gl3RSdfRoU=";
                 };
               })
             ))
