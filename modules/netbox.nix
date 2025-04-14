@@ -158,7 +158,12 @@
             ))
 
             (lib.mkIf config.secshell.netbox.plugin.documents (
-              ps.netbox-documents.overridePythonAttrs {
+              ps.netbox-documents.overridePythonAttrs (previous: {
+                version = "0.7.2";
+                src = previous.src.override {
+                  tag = "v0.7.2";
+                  hash = "sha256-AJuWzZSVsodShLIfdlhLN8ycnC28DULcINCD3av35jI=";
+                };
                 dependencies = [
                   (ps.drf-extra-fields.overridePythonAttrs (previous: {
                     nativeCheckInputs = previous.nativeCheckInputs ++ [ ps.pytz ];
@@ -170,7 +175,7 @@
                     ];
                   }))
                 ];
-              }
+              })
             ))
             (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
             (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
