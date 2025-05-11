@@ -88,6 +88,7 @@ in
         "kernel.perf_event_paranoid" = lib.mkDefault 3;
         "kernel.sysrq" = lib.mkDefault 0;
         "kernel.unprivileged_bpf_disabled" = lib.mkDefault 1;
+        "kernel.io_uring_disabled" = lib.mkDefault 2;
         "net.core.bpf_jit_harden" = lib.mkDefault 2;
         "net.ipv4.ip_forward" = lib.mkDefault 0;
         "net.ipv6.conf.all.forwarding" = lib.mkDefault 0;
