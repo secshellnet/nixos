@@ -17,8 +17,8 @@
   config = lib.mkIf config.secshell.unifi.enable {
     services.unifi = {
       enable = true;
-      unifiPackage = pkgs-unstable.unifi8;
-      mongodbPackage = pkgs.mongodb-7_0;
+      unifiPackage = pkgs.unifi;
+      mongodbPackage = pkgs.mongodb-ce;
     };
 
     networking.firewall = {
