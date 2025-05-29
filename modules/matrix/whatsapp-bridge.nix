@@ -22,12 +22,6 @@
       secrets = {
         "matrix/whatsapp-bridge/as-token" = { };
         "matrix/whatsapp-bridge/hs-token" = { };
-        "matrix/whatsapp-bridge/registration" = {
-          path = "/var/lib/mautrix-whatsapp/whatsapp-registration.yaml";
-          owner = "mautrix-whatsapp";
-          group = "matrix-synapse";
-          mode = "440";
-        };
       };
       templates."matrix/whatsapp-bridge/env".content = ''
         MAUTRIX_WHATSAPP_APPSERVICE_AS_TOKEN=${config.sops.placeholder."matrix/whatsapp-bridge/as-token"}
@@ -42,7 +36,6 @@
 
       mautrix-whatsapp = {
         enable = true;
-        registerToSynapse = false;
         environmentFile = config.sops.templates."matrix/whatsapp-bridge/env".path;
         settings = {
           homeserver = {

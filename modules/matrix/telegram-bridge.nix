@@ -24,12 +24,6 @@
         "matrix/telegram-bridge/hs-token" = { };
         "matrix/telegram-bridge/tg-api-id" = { };
         "matrix/telegram-bridge/tg-api-hash" = { };
-        "matrix/telegram-bridge/registration" = {
-          path = "/var/lib/mautrix-telegram/telegram-registration.yaml";
-          owner = "mautrix-telegram";
-          group = "matrix-synapse";
-          mode = "440";
-        };
       };
       templates."matrix/telegram-bridge/env".content = ''
         MAUTRIX_TELEGRAM_APPSERVICE_AS_TOKEN=${config.sops.placeholder."matrix/telegram-bridge/as-token"}
