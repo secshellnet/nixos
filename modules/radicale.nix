@@ -3,59 +3,64 @@
   lib,
   ...
 }:
+let
+  cfg = config.secshell.radicale;
+  inherit (lib)
+    mkIf
+    types
+    mkEnableOption
+    mkOption
+    ;
+in
 {
   options.secshell.radicale = {
-    enable = lib.mkEnableOption "radicale";
-    domain = lib.mkOption {
-      type = lib.types.str;
+    enable = mkEnableOption "radicale";
+    domain = mkOption {
+      type = types.str;
       default = "dav.${toString config.networking.fqdn}";
       defaultText = "dav.\${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = mkOption { type = types.port; };
   };
 
-  config = lib.mkIf config.secshell.radicale.enable {
+  config = mkIf cfg.enable {
     sops.secrets."radicale/users" = {
       owner = "radicale";
       group = "radicale";
     };
 
-    services.radicale = {
-      enable = true;
-      settings = {
-        server = {
-          hosts = [
-            "[::1]:${toString config.secshell.radicale.internal_port}"
-          ];
-        };
-        auth = {
-          type = "htpasswd";
-          htpasswd_filename = config.sops.secrets."radicale/users".path;
-          htpasswd_encryption = "bcrypt";
+    services = {
+      radicale = {
+        enable = true;
+        settings = {
+          server.hosts = [ "[::1]:${toString cfg.internal_port}" ];
+          auth = {
+            type = "htpasswd";
+            htpasswd_filename = config.sops.secrets."radicale/users".path;
+            htpasswd_encryption = "bcrypt";
+          };
         };
       };
-    };
 
-    services.nginx = {
-      enable = true;
-      virtualHosts."${toString config.secshell.radicale.domain}" = {
-        locations = {
-          "/" = {
-            proxyPass = "http://[::1]:${toString config.secshell.radicale.internal_port}/";
+      nginx = {
+        enable = true;
+        virtualHosts."${toString cfg.domain}" = {
+          locations."/" = {
+            proxyPass = "http://${builtins.head config.services.radicale.settings.server.hosts}/";
             extraConfig = ''
               proxy_set_header X-Script-Name /;
               proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
               proxy_pass_header Authorization;
             '';
           };
-        };
-        serverName = toString config.secshell.radicale.domain;
+          serverName = toString cfg.domain;
 
-        # use ACME DNS-01 challenge
-        useACMEHost = toString config.secshell.radicale.domain;
-        forceSSL = true;
+          # use ACME DNS-01 challenge
+          useACMEHost = toString cfg.domain;
+          forceSSL = true;
+        };
       };
     };
-    security.acme.certs."${toString config.secshell.radicale.domain}" = { };
+    security.acme.certs."${toString cfg.domain}" = { };
   };
 }
