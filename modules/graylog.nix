@@ -4,17 +4,26 @@
   pkgs,
   ...
 }:
+let
+  cfg = config.secshell.graylog;
+  inherit (lib)
+    mkIf
+    types
+    mkEnableOption
+    mkOption
+    ;
+in
 {
   options.secshell.graylog = {
-    enable = lib.mkEnableOption "graylog";
-    domain = lib.mkOption {
-      type = lib.types.str;
+    enable = mkEnableOption "graylog";
+    domain = mkOption {
+      type = types.str;
       default = "graylog.${toString config.networking.fqdn}";
       defaultText = "graylog.\${toString config.networking.fqdn}";
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = mkOption { type = types.port; };
   };
-  config = lib.mkIf config.secshell.graylog.enable {
+  config = mkIf cfg.enable {
     sops.secrets."graylog/rootPassword".owner = "graylog";
     services = {
       mongodb.enable = true;
@@ -30,8 +39,8 @@
         elasticsearchHosts = [ "http://${config.services.elasticsearch.listenAddress}:9200" ];
         nodeIdFile = "/var/lib/graylog/node-id";
         extraConfig = ''
-          http_bind_address = 127.0.0.1:${toString config.secshell.graylog.internal_port}
-          http_publish_uri = https://${toString config.secshell.graylog.domain}
+          http_bind_address = 127.0.0.1:${toString cfg.internal_port}
+          http_publish_uri = https://${toString cfg.domain}
           content_packs_loader_enabled = false
         '';
       };
@@ -49,19 +58,19 @@
 
     services.nginx = {
       enable = true;
-      virtualHosts.${toString config.secshell.graylog.domain} = {
+      virtualHosts.${toString cfg.domain} = {
         locations."/" = {
-          proxyPass = "http://127.0.0.1:${toString config.secshell.graylog.internal_port}";
+          proxyPass = "http://127.0.0.1:${toString cfg.internal_port}";
           proxyWebsockets = true;
         };
-        serverName = toString config.secshell.graylog.domain;
+        serverName = toString cfg.domain;
 
         # use ACME DNS-01 challenge
-        useACMEHost = toString config.secshell.graylog.domain;
+        useACMEHost = toString cfg.domain;
         forceSSL = true;
       };
     };
 
-    security.acme.certs."${toString config.secshell.graylog.domain}" = { };
+    security.acme.certs."${toString cfg.domain}" = { };
   };
 }
