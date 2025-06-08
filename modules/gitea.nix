@@ -76,7 +76,7 @@
   };
   config = lib.mkIf config.secshell.gitea.enable {
     sops.secrets = (
-      {
+      lib.optionalAttrs (!config.secshell.gitea.useLocalDatabase) {
         "gitea/databasePassword".owner = "gitea";
       }
       // lib.optionalAttrs (config.secshell.gitea.smtp.hostname != null) {
@@ -116,9 +116,9 @@
           "ENABLE_NOTIFY_MAIL" = config.secshell.gitea.enableNotifyMail;
           "ALLOW_ONLY_EXTERNAL_REGISTRATION" = config.secshell.gitea.allowOnlyExternalRegistrations;
           "DEFAULT_KEEP_EMAIL_PRIVATE" = config.secshell.gitea.defaultKeepEmailPrivate;
-          "NO_REPLY_ADDRESS" = config.secshell.gitea.smtp.noReplyAddress;
+          "NO_REPLY_ADDRESS" = lib.mkIf (config.secshell.gitea.smtp.hostname != null) config.secshell.gitea.smtp.noReplyAddress;
         };
-        mailer = {
+        mailer = lib.mkIf (config.secshell.gitea.smtp.hostname != null) {
           ENABLED = true;
           SMTP_ADDR = config.secshell.gitea.smtp.hostname;
           SMTP_PORT = config.secshell.gitea.smtp.port;
