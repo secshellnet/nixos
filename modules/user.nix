@@ -3,14 +3,22 @@
   lib,
   ...
 }:
+let
+  inherit (lib)
+    mkIf
+    types
+    mkOption
+    length
+    ;
+in
 {
   options.secshell = {
-    keysDir = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = lib.mkIf (lib.length config.secshell.users == 0) null;
+    keysDir = mkOption {
+      type = types.nullOr types.path;
+      default = mkIf (length config.secshell.users == 0) null;
     };
-    users = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
+    users = mkOption {
+      type = types.listOf types.str;
       default = [ ];
     };
   };
@@ -57,6 +65,5 @@
         export PS1='\[\033[01;32m\]\u@'${config.networking.fqdnOrHostName}'\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$ '
       fi
     '';
-
   };
 }
