@@ -2,9 +2,11 @@
   config,
   lib,
   pkgs,
-  pkgs-unstable,
   ...
 }:
+let
+  cfg = config.secshell.unifi;
+in
 {
   options.secshell.unifi = {
     enable = lib.mkEnableOption "unifi";
@@ -14,7 +16,7 @@
       defaultText = "unifi.\${toString config.networking.fqdn}";
     };
   };
-  config = lib.mkIf config.secshell.unifi.enable {
+  config = lib.mkIf cfg.enable {
     services.unifi = {
       enable = true;
       unifiPackage = pkgs.unifi;
@@ -41,18 +43,18 @@
 
     services.nginx = {
       enable = true;
-      virtualHosts."${toString config.secshell.unifi.domain}" = {
+      virtualHosts."${toString cfg.domain}" = {
         locations."/" = {
           proxyPass = "https://127.0.0.1:8443";
           proxyWebsockets = true;
         };
-        serverName = toString config.secshell.unifi.domain;
+        serverName = toString cfg.domain;
 
         # use ACME DNS-01 challenge
-        useACMEHost = toString config.secshell.unifi.domain;
+        useACMEHost = toString cfg.domain;
         forceSSL = true;
       };
     };
-    security.acme.certs."${toString config.secshell.unifi.domain}" = { };
+    security.acme.certs."${toString cfg.domain}" = { };
   };
 }
