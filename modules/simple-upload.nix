@@ -1,27 +1,34 @@
 { config, lib, ... }:
+let
+  cfg = config.secshell.simple-upload;
+  inherit (lib)
+    mkIf
+    types
+    mkEnableOption
+    mkOption
+    ;
+in
 {
   options.secshell.simple-upload = {
-    enable = lib.mkEnableOption "simple-upload";
-    domain = lib.mkOption {
-      type = lib.types.str;
+    enable = mkEnableOption "simple-upload";
+    domain = mkOption {
+      type = types.str;
       default = "upload.${toString config.networking.fqdn}";
       defaultText = "upload.\${toString config.networking.fqdn}";
     };
   };
-  config = lib.mkIf config.secshell.simple-upload.enable {
+  config = mkIf cfg.enable {
     sops.secrets."simple-upload/basicAuth".owner = "nginx";
 
     # ensure upload directory exists
     systemd.tmpfiles.rules = [ "d /var/lib/uploads 750 nginx nginx" ];
 
     # systemd prevent write access to /var/lib/uploads by default by making it read only
-    systemd.services.nginx.serviceConfig = {
-      ReadWriteDirectories = "/var/lib/uploads";
-    };
+    systemd.services.nginx.serviceConfig.ReadWriteDirectories = "/var/lib/uploads";
 
     services.nginx = {
       enable = true;
-      virtualHosts."${toString config.secshell.simple-upload.domain}" = {
+      virtualHosts."${toString cfg.domain}" = {
         basicAuthFile = config.sops.secrets."simple-upload/basicAuth".path;
         locations = {
           "/" = {
@@ -44,13 +51,13 @@
             '';
           };
         };
-        serverName = toString config.secshell.simple-upload.domain;
+        serverName = toString cfg.domain;
 
         # use ACME DNS-01 challenge
-        useACMEHost = toString config.secshell.simple-upload.domain;
+        useACMEHost = toString cfg.domain;
         forceSSL = true;
       };
     };
-    security.acme.certs."${toString config.secshell.simple-upload.domain}" = { };
+    security.acme.certs."${toString cfg.domain}" = { };
   };
 }
