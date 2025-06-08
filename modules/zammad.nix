@@ -3,56 +3,65 @@
   lib,
   ...
 }:
+let
+  cfg = config.secshell.zammad;
+  inherit (lib)
+    mkIf
+    types
+    mkEnableOption
+    mkOption
+    ;
+in
 {
   options.secshell.zammad = {
-    enable = lib.mkEnableOption "zammad";
-    domain = lib.mkOption {
-      type = lib.types.str;
+    enable = mkEnableOption "zammad";
+    domain = mkOption {
+      type = types.str;
       default = "support.${toString config.networking.fqdn}";
       defaultText = "support.\${toString config.networking.fqdn}";
     };
     ports = {
-      http = lib.mkOption {
-        type = lib.types.port;
+      http = mkOption {
+        type = types.port;
         default = 3000;
       };
-      websocket = lib.mkOption {
-        type = lib.types.port;
+      websocket = mkOption {
+        type = types.port;
         default = 6042;
       };
     };
   };
-  config = lib.mkIf config.secshell.zammad.enable {
+  config = mkIf cfg.enable {
     sops.secrets."zammad/secretKey".owner = "zammad";
 
     services = {
       zammad = {
         enable = true;
-        port = config.secshell.zammad.ports.http;
-        websocketPort = config.secshell.zammad.ports.websocket;
+        port = cfg.ports.http;
+        websocketPort = cfg.ports.websocket;
         secretKeyBaseFile = config.sops.secrets."zammad/secretKey".path;
       };
 
       nginx = {
         enable = true;
-        virtualHosts.${toString config.secshell.zammad.domain} = {
+        virtualHosts.${toString cfg.domain} = {
           locations."/" = {
-            proxyPass = "http://127.0.0.1:${toString config.secshell.zammad.ports.http}";
+            proxyPass = "http://${config.services.zammad.host}:${toString cfg.ports.http}";
           };
           locations."/ws" = {
-            proxyPass = "http://127.0.0.1:${toString config.secshell.zammad.ports.websocket}";
+            proxyPass = "http://${config.services.zammad.host}:${toString cfg.ports.websocket}";
             proxyWebsockets = true;
           };
 
-          serverName = toString config.secshell.zammad.domain;
+          serverName = toString cfg.domain;
 
           # use ACME DNS-01 challenge
-          useACMEHost = toString config.secshell.zammad.domain;
+          useACMEHost = toString cfg.domain;
           forceSSL = true;
         };
       };
     };
 
-    security.acme.certs."${toString config.secshell.zammad.domain}" = { };
+    security.acme.certs."${toString cfg.domain}" = { };
   };
 }
