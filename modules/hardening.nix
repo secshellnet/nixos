@@ -122,6 +122,7 @@ in
         LoginGraceTime = lib.mkDefault 30;
         AllowUsers = lib.mkDefault ([ "root" ] ++ config.secshell.users);
         MaxStartups = lib.mkDefault "10:30:60";
+        LogLevel = lib.mkOverride 950 "DEBUG";
       };
 
       fail2ban = lib.mkIf config.services.openssh.enable {
