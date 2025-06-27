@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  docker-images,
   ...
 }:
 {
@@ -39,10 +38,6 @@
       type = lib.types.bool;
       default = true;
     };
-    enableRedis = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-    };
   };
   config = lib.mkIf config.secshell.paperless.enable {
     sops = lib.recursiveUpdate { secrets."paperless/password" = { }; } (
@@ -63,6 +58,7 @@
       enable = true;
       address = "127.0.0.1";
       port = config.secshell.paperless.internal_port;
+      configureTika = config.secshell.paperless.enableTika;
       settings =
         {
           PAPERLESS_OCR_LANGUAGE = "deu+eng";
@@ -89,14 +85,6 @@
           PAPERLESS_DBHOST = config.secshell.paperless.database.hostname;
           PAPERLESS_DBUSER = config.secshell.paperless.database.username;
           PAPERLESS_DBNAME = config.secshell.paperless.database.name;
-        })
-        // (lib.optionalAttrs (config.secshell.paperless.enableTika) {
-          PAPERLESS_TIKA_ENABLED = true;
-          PAPERLESS_TIKA_GOTENBERG_ENDPOINT = "http://localhost:3000";
-          PAPERLESS_TIKA_ENDPOINT = "http://localhost:9998";
-        })
-        // (lib.optionalAttrs (config.secshell.paperless.enableRedis) {
-          PAPERLESS_REDIS = "redis://localhost:6379";
         });
 
       passwordFile = config.sops.secrets."paperless/password".path;
@@ -115,43 +103,6 @@
       "paperless-task-queue".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
       "paperless-consumer".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
       "paperless-scheduler".serviceConfig.EnvironmentFile = config.sops.templates."paperless/env".path;
-    };
-
-    virtualisation.oci-containers.containers = {
-      tika = lib.mkIf config.secshell.paperless.enableTika {
-        image = docker-images.tika;
-        extraOptions = [
-          "--rm=false"
-          "--restart=always"
-          "--network=host"
-          "--no-healthcheck"
-        ];
-      };
-      gotenberg = lib.mkIf config.secshell.paperless.enableTika {
-        image = docker-images.gotenberg;
-        extraOptions = [
-          "--rm=false"
-          "--restart=always"
-          "--network=host"
-          "--no-healthcheck"
-        ];
-        cmd = [
-          "gotenberg"
-          "--chromium-disable-javascript=true"
-          "--chromium-allow-list=file:///tmp/.*"
-          "--log-level=warn"
-          "--log-format=text"
-        ];
-      };
-      redis = lib.mkIf config.secshell.paperless.enableRedis {
-        image = docker-images.redis;
-        extraOptions = [
-          "--rm=false"
-          "--restart=always"
-          "--network=host"
-          "--no-healthcheck"
-        ];
-      };
     };
 
     services.nginx = {
