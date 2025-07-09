@@ -12,7 +12,7 @@
             ./modules/keycloak.nix
             ./modules/matrix/default.nix
             ./modules/monitoring/default.nix
-            ./modules/netbox.nix
+            ./modules/netbox/default.nix
             ./modules/nexus.nix
             ./modules/paperless.nix
             ./modules/peering-manager.nix

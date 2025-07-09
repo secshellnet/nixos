@@ -18,22 +18,14 @@
     };
     internal_port = lib.mkOption { type = lib.types.port; };
     oidc = {
-      domain = lib.mkOption {
+      endpoint = lib.mkOption {
         type = lib.types.str;
         default = "";
-      };
-      realm = lib.mkOption {
-        type = lib.types.str;
-        default = "main";
       };
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.netbox.domain;
         defaultText = "config.secshell.netbox.domain";
-      };
-      pubkey = lib.mkOption {
-        type = lib.types.str;
-        default = "";
       };
     };
     useLocalDatabase = lib.mkOption {
@@ -76,7 +68,7 @@
       {
         "netbox/secretKey".owner = "netbox";
       }
-      // (lib.optionalAttrs (config.secshell.netbox.oidc.domain != "") {
+      // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
         "netbox/socialAuthSecret".owner = "netbox";
       })
       // (lib.optionalAttrs (!config.secshell.netbox.useLocalDatabase) {
@@ -91,7 +83,17 @@
 
       netbox = {
         enable = true;
-        package = pkgs-unstable.netbox;
+        package =
+          if config.secshell.netbox.oidc.endpoint != "" then
+            pkgs-unstable.netbox.overrideAttrs (old: {
+              installPhase =
+                old.installPhase
+                + ''
+                  ln -s ${./pipeline.py} $out/opt/netbox/netbox/netbox/secshell_pipeline.py
+                '';
+            })
+          else
+            pkgs-unstable.netbox;
         secretKeyFile = config.sops.secrets."netbox/secretKey".path;
         port = config.secshell.netbox.internal_port;
         listenAddress = "127.0.0.1";
@@ -101,26 +103,23 @@
             TIME_ZONE = "Europe/Berlin";
             METRICS_ENABLED = true;
           }
-          // (lib.optionalAttrs (config.secshell.netbox.oidc.domain != "") {
+          // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
             # https://stackoverflow.com/questions/53550321/keycloak-gatekeeper-aud-claim-and-client-id-do-not-match
             REMOTE_AUTH_ENABLED = true;
             REMOTE_AUTH_AUTO_CREATE_USER = true;
             REMOTE_AUTH_GROUP_SYNC_ENABLED = true;
-            REMOTE_AUTH_BACKEND = "social_core.backends.keycloak.KeycloakOAuth2";
+            SOCIAL_AUTH_JSONFIELD_ENABLED = true;
+            SOCIAL_AUTH_VERIFY_SSL = true;
+            #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
+            REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth";
 
             #REMOTE_AUTH_GROUP_SEPARATOR=",";
             REMOTE_AUTH_SUPERUSER_GROUPS = [ "superuser" ];
             REMOTE_AUTH_STAFF_GROUPS = [ "staff" ];
             REMOTE_AUTH_DEFAULT_GROUPS = [ "staff" ];
-
-            SOCIAL_AUTH_KEYCLOAK_KEY = config.secshell.netbox.oidc.clientId;
-            SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = config.secshell.netbox.oidc.pubkey;
-            SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = "https://${config.secshell.netbox.oidc.domain}/realms/${config.secshell.netbox.oidc.realm}/protocol/openid-connect/auth";
-            SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = "https://${config.secshell.netbox.oidc.domain}/realms/${config.secshell.netbox.oidc.realm}/protocol/openid-connect/token";
-            SOCIAL_AUTH_KEYCLOAK_ID_KEY = "email";
-            SOCIAL_AUTH_JSONFIELD_ENABLED = true;
-            SOCIAL_AUTH_VERIFY_SSL = true;
-            #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
+            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = config.secshell.netbox.oidc.endpoint;
+            SOCIAL_AUTH_OIDC_KEY = config.secshell.netbox.oidc.clientId;
+            LOGOUT_REDIRECT_URL = "${config.secshell.netbox.oidc.endpoint}end-session/";
           })
           // {
             PLUGINS = [
@@ -144,7 +143,7 @@
         plugins =
           ps:
           let
-            plugins = ps.callPackage ./netbox-plugins { };
+            plugins = ps.callPackage ./plugins { };
           in
           [
             (lib.mkIf config.secshell.netbox.plugin.bgp (
@@ -212,23 +211,84 @@
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
-        extraConfig = lib.mkIf (!config.secshell.netbox.useLocalDatabase) ''
-          DATABASE = {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': '${config.secshell.netbox.database.name}',
-            'USER': '${config.secshell.netbox.database.username}',
-            'HOST': '${config.secshell.netbox.database.hostname}',
-            'CONN_MAX_AGE': 300,
-          }
-          with open("${config.sops.secrets."netbox/databasePassword".path}", "r") as file:
-            DATABASE['PASSWORD'] = file.readline()
+        extraConfig = ''
+          ${lib.optionalString (!config.secshell.netbox.useLocalDatabase) ''
+            DATABASE = {
+              'ENGINE': 'django.db.backends.postgresql',
+              'NAME': '${config.secshell.netbox.database.name}',
+              'USER': '${config.secshell.netbox.database.username}',
+              'HOST': '${config.secshell.netbox.database.hostname}',
+              'CONN_MAX_AGE': 300,
+            }
+            with open("${config.sops.secrets."netbox/databasePassword".path}", "r") as file:
+              DATABASE['PASSWORD'] = file.readline()
+          ''}
+
+          ${lib.optionalString (config.secshell.netbox.oidc.endpoint != "") ''
+            with open("${config.sops.secrets."netbox/socialAuthSecret".path}", "r") as file:
+              SOCIAL_AUTH_OIDC_SECRET = file.readline()
+
+            SOCIAL_AUTH_PIPELINE = (
+              ###################
+              # Default pipelines
+              ###################
+
+              # Get the information we can about the user and return it in a simple
+              # format to create the user instance later. In some cases the details are
+              # already part of the auth response from the provider, but sometimes this
+              # could hit a provider API.
+              'social_core.pipeline.social_auth.social_details',
+
+              # Get the social uid from whichever service we're authing thru. The uid is
+              # the unique identifier of the given user in the provider.
+              'social_core.pipeline.social_auth.social_uid',
+
+              # Verifies that the current auth process is valid within the current
+              # project, this is where emails and domains whitelists are applied (if
+              # defined).
+              'social_core.pipeline.social_auth.auth_allowed',
+
+              # Checks if the current social-account is already associated in the site.
+              'social_core.pipeline.social_auth.social_user',
+
+              # Make up a username for this person, appends a random string at the end if
+              # there's any collision.
+              'social_core.pipeline.user.get_username',
+
+              # Send a validation email to the user to verify its email address.
+              # Disabled by default.
+              # 'social_core.pipeline.mail.mail_validation',
+
+              # Associates the current social details with another user account with
+              # a similar email address. Disabled by default.
+              # 'social_core.pipeline.social_auth.associate_by_email',
+
+              # Create a user account if we haven't found one yet.
+              'social_core.pipeline.user.create_user',
+
+              # Create the record that associates the social account with the user.
+              'social_core.pipeline.social_auth.associate_user',
+
+              # Populate the extra_data field in the social record with the values
+              # specified by settings (and the default ones like access_token, etc).
+              'social_core.pipeline.social_auth.load_extra_data',
+
+              # Update the user record with any changed info from the auth service.
+              'social_core.pipeline.user.user_details',
+
+
+              ###################
+              # Custom pipelines
+              ###################
+              # Set authentik Groups
+              'netbox.secshell_pipeline.add_groups',
+              'netbox.secshell_pipeline.remove_groups',
+              # Set Roles
+              'netbox.secshell_pipeline.set_roles'
+            )
+          ''}
         '';
-
-        keycloakClientSecret = lib.mkIf (
-          config.secshell.netbox.oidc.domain != ""
-        ) config.sops.secrets."netbox/socialAuthSecret".path;
       };
-
       nginx = {
         enable = true;
         virtualHosts."${toString config.secshell.netbox.domain}" = {
