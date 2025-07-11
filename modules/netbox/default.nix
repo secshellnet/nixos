@@ -61,6 +61,7 @@
       prometheus-sd = lib.mkEnableOption "netbox prometheus-sd plugin";
       kea = lib.mkEnableOption "netbox kea plugin";
       attachments = lib.mkEnableOption "netbox attachments plugin";
+      branching = lib.mkEnableOption "netbox branching plugin";
     };
   };
   config = lib.mkIf config.secshell.netbox.enable {
@@ -137,6 +138,8 @@
               (lib.mkIf config.secshell.netbox.plugin.prometheus-sd "netbox_prometheus_sd")
               (lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
               (lib.mkIf config.secshell.netbox.plugin.attachments "netbox_attachments")
+              # netbox-branching README: Note that netbox_branching MUST be the last plugin listed.
+              (lib.mkIf config.secshell.netbox.plugin.branching "netbox_branching")
             ];
           };
 
@@ -208,6 +211,7 @@
             (lib.mkIf config.secshell.netbox.plugin.prometheus-sd ps.netbox-plugin-prometheus-sd)
             (lib.mkIf config.secshell.netbox.plugin.kea plugins.netbox-kea)
             (lib.mkIf config.secshell.netbox.plugin.attachments plugins.netbox-attachments)
+            (lib.mkIf config.secshell.netbox.plugin.branching plugins.netbox-branching)
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
@@ -222,6 +226,20 @@
             }
             with open("${config.sops.secrets."netbox/databasePassword".path}", "r") as file:
               DATABASE['PASSWORD'] = file.readline()
+          ''}
+
+          ${lib.optionalString config.secshell.netbox.plugin.branching ''
+            from netbox_branching.utilities import DynamicSchemaDict
+
+            DATABASES = DynamicSchemaDict(DATABASE)
+
+            # unset DATABASE variable
+            if 'DATABASE' in globals():
+                del DATABASE
+
+            DATABASE_ROUTERS = [
+                'netbox_branching.database.BranchAwareRouter',
+            ]
           ''}
 
           ${lib.optionalString (config.secshell.netbox.oidc.endpoint != "") ''
