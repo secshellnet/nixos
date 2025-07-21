@@ -6,6 +6,7 @@
         default = {
           imports = [
             # Web Applications
+            ./modules/cryptpad.nix
             ./modules/gitea.nix
             ./modules/gitea-actions.nix
             ./modules/graylog.nix
