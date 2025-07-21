@@ -7,6 +7,7 @@
           imports = [
             # Web Applications
             ./modules/gitea.nix
+            ./modules/gitea-actions.nix
             ./modules/graylog.nix
             ./modules/hedgedoc.nix
             ./modules/keycloak.nix
