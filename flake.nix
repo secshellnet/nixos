@@ -17,6 +17,7 @@
             ./modules/nexus.nix
             ./modules/paperless.nix
             ./modules/peering-manager.nix
+            ./modules/privatebin.nix
             ./modules/radicale.nix
             ./modules/simple-upload.nix
             ./modules/unifi.nix
