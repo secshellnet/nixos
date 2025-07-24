@@ -135,37 +135,22 @@
               (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
               (lib.mkIf config.secshell.netbox.plugin.reorder-rack "netbox_reorder_rack")
               (lib.mkIf config.secshell.netbox.plugin.prometheus-sd "netbox_prometheus_sd")
-              (lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
+              #(lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
               (lib.mkIf config.secshell.netbox.plugin.attachments "netbox_attachments")
             ];
           };
 
         plugins =
           ps:
-          let
-            plugins = ps.callPackage ./plugins { };
-          in
+          #let
+          #  plugins = ps.callPackage ./plugins { };
+          #in
           [
-            (lib.mkIf config.secshell.netbox.plugin.bgp (
-              ps.netbox-bgp.overridePythonAttrs (previous: {
-                version = "0.15.0";
-                src = previous.src.override {
-                  tag = "0.15.0";
-                  hash = "sha256-2PJD/6WjFQRfreK2kpWIYXb5r4noJBa8zejK5r+A+xA=";
-                };
-              })
-            ))
-
+            (lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
             (lib.mkIf config.secshell.netbox.plugin.documents (
-              ps.netbox-documents.overridePythonAttrs (previous: {
-                version = "0.7.2";
-                src = previous.src.override {
-                  tag = "v0.7.2";
-                  hash = "sha256-AJuWzZSVsodShLIfdlhLN8ycnC28DULcINCD3av35jI=";
-                };
+              ps.netbox-documents.overridePythonAttrs (_previous: {
                 dependencies = [
-                  (ps.drf-extra-fields.overridePythonAttrs (previous: {
-                    nativeCheckInputs = previous.nativeCheckInputs ++ [ ps.pytz ];
+                  (ps.drf-extra-fields.overridePythonAttrs (_previous: {
                     disabledTests = [
                       "test_create"
                       "test_create_with_base64_prefix"
@@ -178,27 +163,11 @@
             ))
             (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
             (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
-            (lib.mkIf config.secshell.netbox.plugin.topologyViews (
-              ps.netbox-topology-views.overridePythonAttrs (previous: {
-                version = "4.2.1";
-                src = previous.src.override {
-                  tag = "v4.2.1";
-                  hash = "sha256-ysupqyRFOKVa+evNbfSdW2W57apI0jVEU92afz6+AaE=";
-                };
-              })
-            ))
+            (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
-            (lib.mkIf config.secshell.netbox.plugin.contract plugins.netbox-contract)
+            (lib.mkIf config.secshell.netbox.plugin.contract ps.netbox-contract)
             (lib.mkIf config.secshell.netbox.plugin.interface-synchronization ps.netbox-interface-synchronization)
-            (lib.mkIf config.secshell.netbox.plugin.dns (
-              ps.netbox-dns.overridePythonAttrs (previous: {
-                version = "1.2.11";
-                src = previous.src.override {
-                  tag = "1.2.11";
-                  hash = "sha256-cT2nvPDsvZBVuhvvORtxwb2TDHqnSpvpIJFkGZy1CEc=";
-                };
-              })
-            ))
+            (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-dns)
             (lib.mkIf config.secshell.netbox.plugin.napalm (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
                 dependencies = previous.dependencies ++ [ ps.napalm-ros ];
@@ -206,8 +175,8 @@
             ))
             (lib.mkIf config.secshell.netbox.plugin.reorder-rack ps.netbox-reorder-rack)
             (lib.mkIf config.secshell.netbox.plugin.prometheus-sd ps.netbox-plugin-prometheus-sd)
-            (lib.mkIf config.secshell.netbox.plugin.kea plugins.netbox-kea)
-            (lib.mkIf config.secshell.netbox.plugin.attachments plugins.netbox-attachments)
+            #(lib.mkIf config.secshell.netbox.plugin.kea plugins.netbox-kea)
+            (lib.mkIf config.secshell.netbox.plugin.attachments ps.netbox-attachments)
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
