@@ -150,9 +150,25 @@
           #  plugins = ps.callPackage ./plugins { };
           #in
           [
-            (lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
+            #(lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
+            (lib.mkIf config.secshell.netbox.plugin.bgp (
+              ps.netbox-bgp.overridePythonAttrs (previous: {
+                version = "0.16.0";
+                src = previous.src.override {
+                  tag = "v0.16.0";
+                  hash = "sha256-pm6Xn34kPlGMzQAsiwrfTprPZtw7edsyr3PpRtJWnNE=";
+                };
+              })
+            ))
+
             (lib.mkIf config.secshell.netbox.plugin.documents (
-              ps.netbox-documents.overridePythonAttrs (_previous: {
+              ps.netbox-documents.overridePythonAttrs (previous: {
+                # https://github.com/NixOS/nixpkgs/pull/413944
+                version = "0.7.3";
+                src = previous.src.override {
+                  tag = "v0.7.3";
+                  hash = "sha256-lEbD+NuLyHXnXjGBdceE8RYhmoKEccRB4rKuxknjZL4=";
+                };
                 dependencies = [
                   (ps.drf-extra-fields.overridePythonAttrs (_previous: {
                     disabledTests = [
@@ -160,27 +176,87 @@
                       "test_create_with_base64_prefix"
                       "test_create_with_webp_image"
                       "test_remove_with_empty_string"
+                      "test_read_source_with_context"
                     ];
                   }))
                 ];
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.floorplan ps.netbox-floorplan-plugin)
-            (lib.mkIf config.secshell.netbox.plugin.qrcode ps.netbox-qrcode)
-            (lib.mkIf config.secshell.netbox.plugin.topologyViews ps.netbox-topology-views)
+            (lib.mkIf config.secshell.netbox.plugin.floorplan (
+              # https://github.com/NixOS/nixpkgs/pull/413224
+              ps.netbox-floorplan-plugin.overridePythonAttrs (previous: {
+                version = "0.7.0";
+                src = previous.src.override {
+                  tag = "0.7.0";
+                  hash = "sha256-ecwPdcVuXU6OIVbafYGaY6+pbBHxhh1AlNmDBlUk1Ss=";
+                };
+              })
+            ))
+            (lib.mkIf config.secshell.netbox.plugin.qrcode (
+              # https://github.com/NixOS/nixpkgs/pull/411383
+              ps.netbox-qrcode.overridePythonAttrs (previous: {
+                version = "0.0.18";
+                src = previous.src.override {
+                  tag = "v0.0.18";
+                  hash = "sha256-8PPab0sByr03zoSI2d+BpxeTnLHmbN+4c+s99x+yNvA=";
+                };
+              })
+            ))
+            (lib.mkIf config.secshell.netbox.plugin.topologyViews (
+              ps.netbox-topology-views.overridePythonAttrs (previous: {
+                # https://github.com/NixOS/nixpkgs/pull/412588
+                version = "4.3.0";
+                src = previous.src.override {
+                  tag = "v4.3.0";
+                  hash = "sha256-K8hG2M8uWPk9+7u21z+hmedOovievkMNpn3p7I4+6t4=";
+                };
+              })
+            ))
             #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
             (lib.mkIf config.secshell.netbox.plugin.contract ps.netbox-contract)
-            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization ps.netbox-interface-synchronization)
-            (lib.mkIf config.secshell.netbox.plugin.dns ps.netbox-dns)
+            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization (
+              # https://github.com/NixOS/nixpkgs/pull/413560
+              ps.netbox-interface-synchronization.overridePythonAttrs (previous: {
+                version = "4.1.7";
+                src = previous.src.override {
+                  tag = "4.1.7";
+                  hash = "sha256-02fdfE1BwpWsh21M0oP65kMAbFxDxYHsAEWA64rUl18=";
+                };
+              })
+            ))
+            (lib.mkIf config.secshell.netbox.plugin.dns (
+              ps.netbox-dns.overridePythonAttrs (previous: {
+                # https://github.com/NixOS/nixpkgs/pull/404982
+                version = "1.3.4";
+                src = previous.src.override {
+                  tag = "1.3.4";
+                  hash = "sha256-Tk+Kzcve7jtJ8UyKdNUoNzct8AxOkZ84g/eg/vX1FEc=";
+                };
+              })
+            ))
+            # upstream of napalm-plugin doesn't support 4.3 yet
             (lib.mkIf config.secshell.netbox.plugin.napalm (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
-                dependencies = previous.dependencies ++ [ ps.napalm-ros ];
+                dependencies = previous.dependencies ++ [
+                  (ps.napalm-ros.overridePythonAttrs (prev: {
+                    disabled = false;
+                  }))
+                ];
               })
             ))
             (lib.mkIf config.secshell.netbox.plugin.reorder-rack ps.netbox-reorder-rack)
             (lib.mkIf config.secshell.netbox.plugin.prometheus-sd ps.netbox-plugin-prometheus-sd)
             #(lib.mkIf config.secshell.netbox.plugin.kea plugins.netbox-kea)
-            (lib.mkIf config.secshell.netbox.plugin.attachments ps.netbox-attachments)
+            (lib.mkIf config.secshell.netbox.plugin.attachments (
+              ps.netbox-attachments.overridePythonAttrs (previous: {
+                # https://github.com/NixOS/nixpkgs/pull/408776
+                version = "8.0.4";
+                src = previous.src.override {
+                  tag = "8.0.4";
+                  hash = "sha256-wVTI0FAj6RaEaE6FhvHq4ophnCspobqL2SnTYVynlxs=";
+                };
+              })
+            ))
           ];
 
         # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
