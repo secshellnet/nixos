@@ -11,6 +11,20 @@
 
   options.secshell.netbox = {
     enable = lib.mkEnableOption "netbox";
+    package = lib.mkPackageOption pkgs-unstable "netbox" { } // {
+      apply =
+        pkg:
+        if config.secshell.netbox.oidc.endpoint != "" then
+          pkg.overrideAttrs (old: {
+            installPhase =
+              old.installPhase
+              + ''
+                ln -s ${./pipeline.py} $out/opt/netbox/netbox/netbox/secshell_pipeline.py
+              '';
+          })
+        else
+          pkg;
+    };
     domain = lib.mkOption {
       type = lib.types.str;
       default = "netbox.${toString config.networking.fqdn}";
@@ -83,17 +97,7 @@
 
       netbox = {
         enable = true;
-        package =
-          if config.secshell.netbox.oidc.endpoint != "" then
-            pkgs-unstable.netbox.overrideAttrs (old: {
-              installPhase =
-                old.installPhase
-                + ''
-                  ln -s ${./pipeline.py} $out/opt/netbox/netbox/netbox/secshell_pipeline.py
-                '';
-            })
-          else
-            pkgs-unstable.netbox;
+        package = config.secshell.netbox.package;
         secretKeyFile = config.sops.secrets."netbox/secretKey".path;
         port = config.secshell.netbox.internal_port;
         listenAddress = "127.0.0.1";
