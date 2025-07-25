@@ -24,16 +24,6 @@ let
         nodejs
         openssh
         rsync
-
-        # custom tools required in ci pipeline
-        nixfmt-rfc-style
-        deadnix
-        gitleaks
-        netcat
-        gnused
-        gnupg
-        sops
-        mkpasswd
       ])
       ++ cfg.storeDependencies;
   };
@@ -57,7 +47,17 @@ in
 
       storeDependencies = lib.mkOption {
         type = lib.types.listOf lib.types.package;
-        default = [ ];
+        default = with pkgs; [
+          # custom tools required in ci pipeline
+          nixfmt-rfc-style
+          deadnix
+          gitleaks
+          netcat
+          gnused
+          gnupg
+          sops
+          mkpasswd
+        ];
         description = "List of packages to symlink into the container";
       };
 
