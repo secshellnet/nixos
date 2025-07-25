@@ -16,48 +16,85 @@
         pkg:
         if config.secshell.netbox.oidc.endpoint != "" then
           pkg.overrideAttrs (old: {
-            installPhase =
-              old.installPhase
-              + ''
-                ln -s ${./pipeline.py} $out/opt/netbox/netbox/netbox/secshell_pipeline.py
-              '';
+            installPhase = old.installPhase + ''
+              ln -s ${./pipeline.py} $out/opt/netbox/netbox/netbox/secshell_pipeline.py
+            '';
           })
         else
           pkg;
+      description = ''
+        The netbox package to use.
+        If oidc is configured the secshell oidc pipeline for social auth
+        will be automaticlly added to the package.
+      '';
     };
     domain = lib.mkOption {
       type = lib.types.str;
       default = "netbox.${toString config.networking.fqdn}";
       defaultText = "netbox.\${toString config.networking.fqdn}";
+      description = ''
+        The primary domain name for this service.
+        Used for virtual host configuration, TLS certificates, and service URLs.
+      '';
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
     oidc = {
       endpoint = lib.mkOption {
         type = lib.types.str;
         default = "";
+        description = ''
+          The open id connect server used for authentication.
+          Leave null to disable oidc authentication.
+        '';
       };
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.netbox.domain;
         defaultText = "config.secshell.netbox.domain";
+        description = ''
+          The client id for the open id connect authentication.
+        '';
       };
     };
     useLocalDatabase = lib.mkOption {
       type = lib.types.bool;
       default = true;
+      description = ''
+        Whether to use a local database instance for this service.
+        When enabled (default), the service will deploy and manage
+        its own postgres database. When disabled, you must configure external
+        database connection parameters separately.
+      '';
     };
     database = {
       hostname = lib.mkOption {
         type = lib.types.str;
         default = "";
+        description = ''
+          Database server hostname. Not required if local database is being used.
+        '';
       };
       username = lib.mkOption {
         type = lib.types.str;
         default = "netbox";
+        description = ''
+          Database user account with read/write privileges.
+          For PostgreSQL, ensure the user has CREATEDB permission
+          for initial setup if creating databases automatically.
+        '';
       };
       name = lib.mkOption {
         type = lib.types.str;
         default = "netbox";
+        description = ''
+          Name of the database to use.
+          Will be created automatically if the user has permissions.
+        '';
       };
     };
     plugin = {
@@ -78,16 +115,15 @@
     };
   };
   config = lib.mkIf config.secshell.netbox.enable {
-    sops.secrets =
-      {
-        "netbox/secretKey".owner = "netbox";
-      }
-      // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
-        "netbox/socialAuthSecret".owner = "netbox";
-      })
-      // (lib.optionalAttrs (!config.secshell.netbox.useLocalDatabase) {
-        "netbox/databasePassword".owner = "netbox";
-      });
+    sops.secrets = {
+      "netbox/secretKey".owner = "netbox";
+    }
+    // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
+      "netbox/socialAuthSecret".owner = "netbox";
+    })
+    // (lib.optionalAttrs (!config.secshell.netbox.useLocalDatabase) {
+      "netbox/databasePassword".owner = "netbox";
+    });
 
     services = {
       postgresql = {
@@ -101,48 +137,47 @@
         secretKeyFile = config.sops.secrets."netbox/secretKey".path;
         port = config.secshell.netbox.internal_port;
         listenAddress = "127.0.0.1";
-        settings =
-          {
-            LOGIN_REQUIRED = true;
-            TIME_ZONE = "Europe/Berlin";
-            METRICS_ENABLED = true;
-          }
-          // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
-            # https://stackoverflow.com/questions/53550321/keycloak-gatekeeper-aud-claim-and-client-id-do-not-match
-            REMOTE_AUTH_ENABLED = true;
-            REMOTE_AUTH_AUTO_CREATE_USER = true;
-            REMOTE_AUTH_GROUP_SYNC_ENABLED = true;
-            SOCIAL_AUTH_JSONFIELD_ENABLED = true;
-            SOCIAL_AUTH_VERIFY_SSL = true;
-            #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
-            REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth";
+        settings = {
+          LOGIN_REQUIRED = true;
+          TIME_ZONE = "Europe/Berlin";
+          METRICS_ENABLED = true;
+        }
+        // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
+          # https://stackoverflow.com/questions/53550321/keycloak-gatekeeper-aud-claim-and-client-id-do-not-match
+          REMOTE_AUTH_ENABLED = true;
+          REMOTE_AUTH_AUTO_CREATE_USER = true;
+          REMOTE_AUTH_GROUP_SYNC_ENABLED = true;
+          SOCIAL_AUTH_JSONFIELD_ENABLED = true;
+          SOCIAL_AUTH_VERIFY_SSL = true;
+          #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
+          REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth";
 
-            #REMOTE_AUTH_GROUP_SEPARATOR=",";
-            REMOTE_AUTH_SUPERUSER_GROUPS = [ "superuser" ];
-            REMOTE_AUTH_STAFF_GROUPS = [ "staff" ];
-            REMOTE_AUTH_DEFAULT_GROUPS = [ "staff" ];
-            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = config.secshell.netbox.oidc.endpoint;
-            SOCIAL_AUTH_OIDC_KEY = config.secshell.netbox.oidc.clientId;
-            LOGOUT_REDIRECT_URL = "${config.secshell.netbox.oidc.endpoint}end-session/";
-          })
-          // {
-            PLUGINS = [
-              (lib.mkIf config.secshell.netbox.plugin.bgp "netbox_bgp")
-              (lib.mkIf config.secshell.netbox.plugin.documents "netbox_documents")
-              (lib.mkIf config.secshell.netbox.plugin.floorplan "netbox_floorplan")
-              (lib.mkIf config.secshell.netbox.plugin.qrcode "netbox_qrcode")
-              (lib.mkIf config.secshell.netbox.plugin.topologyViews "netbox_topology_views")
-              #(lib.mkIf config.secshell.netbox.plugin.proxbox "netbox_proxbox")
-              (lib.mkIf config.secshell.netbox.plugin.contract "netbox_contract")
-              (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
-              (lib.mkIf config.secshell.netbox.plugin.dns "netbox_dns")
-              (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
-              (lib.mkIf config.secshell.netbox.plugin.reorder-rack "netbox_reorder_rack")
-              (lib.mkIf config.secshell.netbox.plugin.prometheus-sd "netbox_prometheus_sd")
-              #(lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
-              (lib.mkIf config.secshell.netbox.plugin.attachments "netbox_attachments")
-            ];
-          };
+          #REMOTE_AUTH_GROUP_SEPARATOR=",";
+          REMOTE_AUTH_SUPERUSER_GROUPS = [ "superuser" ];
+          REMOTE_AUTH_STAFF_GROUPS = [ "staff" ];
+          REMOTE_AUTH_DEFAULT_GROUPS = [ "staff" ];
+          SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = config.secshell.netbox.oidc.endpoint;
+          SOCIAL_AUTH_OIDC_KEY = config.secshell.netbox.oidc.clientId;
+          LOGOUT_REDIRECT_URL = "${config.secshell.netbox.oidc.endpoint}end-session/";
+        })
+        // {
+          PLUGINS = [
+            (lib.mkIf config.secshell.netbox.plugin.bgp "netbox_bgp")
+            (lib.mkIf config.secshell.netbox.plugin.documents "netbox_documents")
+            (lib.mkIf config.secshell.netbox.plugin.floorplan "netbox_floorplan")
+            (lib.mkIf config.secshell.netbox.plugin.qrcode "netbox_qrcode")
+            (lib.mkIf config.secshell.netbox.plugin.topologyViews "netbox_topology_views")
+            #(lib.mkIf config.secshell.netbox.plugin.proxbox "netbox_proxbox")
+            (lib.mkIf config.secshell.netbox.plugin.contract "netbox_contract")
+            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
+            (lib.mkIf config.secshell.netbox.plugin.dns "netbox_dns")
+            (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
+            (lib.mkIf config.secshell.netbox.plugin.reorder-rack "netbox_reorder_rack")
+            (lib.mkIf config.secshell.netbox.plugin.prometheus-sd "netbox_prometheus_sd")
+            #(lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
+            (lib.mkIf config.secshell.netbox.plugin.attachments "netbox_attachments")
+          ];
+        };
 
         plugins =
           ps:

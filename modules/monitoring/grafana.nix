@@ -1,38 +1,71 @@
 { config, lib, ... }:
 {
   options.secshell.monitoring.grafana = {
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
     oidc = {
       domain = lib.mkOption {
         type = lib.types.str;
         default = "";
+        description = ''
+          The open id connect server used for authentication.
+          Leave null to disable oidc authentication.
+        '';
       };
       realm = lib.mkOption {
         type = lib.types.str;
         default = "main";
+        description = ''
+          The realm to use for the open id connect authentication.
+        '';
       };
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.monitoring.domains.grafana;
         defaultText = "config.secshell.monitoring.domains.grafana";
+        description = ''
+          The client id for the open id connect authentication.
+        '';
       };
     };
     useLocalDatabase = lib.mkOption {
       type = lib.types.bool;
       default = true;
+      description = ''
+        Whether to use a local database instance for this service.
+        When enabled (default), the service will deploy and manage
+        its own postgres database. When disabled, you must configure external
+        database connection parameters separately.
+      '';
     };
     database = {
       hostname = lib.mkOption {
         type = lib.types.str;
         default = "";
+        description = ''
+          Database server hostname. Not required if local database is being used.
+        '';
       };
       username = lib.mkOption {
         type = lib.types.str;
         default = "grafana";
+        description = ''
+          Database user account with read/write privileges.
+          For PostgreSQL, ensure the user has CREATEDB permission
+          for initial setup if creating databases automatically.
+        '';
       };
       name = lib.mkOption {
         type = lib.types.str;
         default = "grafana";
+        description = ''
+          Name of the database to use.
+          Will be created automatically if the user has permissions.
+        '';
       };
     };
   };
@@ -74,20 +107,19 @@
           api_url = "https://${config.secshell.monitoring.grafana.oidc.domain}/realms/${config.secshell.monitoring.grafana.oidc.realm}/protocol/openid-connect/userinfo";
           role_attribute_path = "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'";
         };
-        database =
-          {
-            type = "postgres";
-          }
-          // (lib.optionalAttrs (config.secshell.monitoring.grafana.useLocalDatabase) {
-            host = "/run/postgresql";
-            user = "grafana";
-          })
-          // (lib.optionalAttrs (!config.secshell.monitoring.grafana.useLocalDatabase) {
-            host = config.secshell.monitoring.grafana.database.hostname;
-            user = config.secshell.monitoring.grafana.database.username;
-            name = config.secshell.monitoring.grafana.database.name;
-            password = "$__file{${config.sops.secrets."monitoring/grafana/databasePassword".path}}";
-          });
+        database = {
+          type = "postgres";
+        }
+        // (lib.optionalAttrs (config.secshell.monitoring.grafana.useLocalDatabase) {
+          host = "/run/postgresql";
+          user = "grafana";
+        })
+        // (lib.optionalAttrs (!config.secshell.monitoring.grafana.useLocalDatabase) {
+          host = config.secshell.monitoring.grafana.database.hostname;
+          user = config.secshell.monitoring.grafana.database.username;
+          name = config.secshell.monitoring.grafana.database.name;
+          password = "$__file{${config.sops.secrets."monitoring/grafana/databasePassword".path}}";
+        });
       };
       provision = {
         enable = true;
