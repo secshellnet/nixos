@@ -30,7 +30,7 @@
             ./modules/containers.nix
             ./modules/filebeat.nix
             ./modules/firewall.nix
-            ./modules/hardening.nix
+            ./modules/hardening
             ./modules/nginx.nix
             ./modules/acme.nix
             ./modules/postgres.nix
