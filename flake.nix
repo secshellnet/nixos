@@ -35,7 +35,6 @@
             ./modules/acme.nix
             ./modules/postgres.nix
             ./modules/user.nix
-            ./modules/bind.nix
           ];
         };
       };
