@@ -6,22 +6,6 @@
 }:
 {
   options.secshell.nginx = {
-    useStagingEnvironment = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        ::: {.warning}
-        The option `secshell.nginx.useStagingEnvironment` is deprecated. Use `secshell.acme.useStagingEnvironment` instead.
-      '';
-    };
-    acmeMail = lib.mkOption {
-      type = lib.types.str;
-      default = "acme@secshell.net";
-      description = ''
-        ::: {.warning}
-        The option `secshell.nginx.acmeMail` is deprecated. Use `secshell.acme.acmeMail` instead.
-      '';
-    };
     openFirewall = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -135,11 +119,5 @@
     ];
 
     users.users.nginx.extraGroups = [ "acme" ];
-
-    # fixup renamed options
-    secshell.acme = {
-      acmeMail = lib.mkDefault config.secshell.nginx.acmeMail;
-      useStagingEnvironment = lib.mkDefault config.secshell.nginx.useStagingEnvironment;
-    };
   };
 }
