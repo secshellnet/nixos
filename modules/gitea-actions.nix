@@ -1,5 +1,4 @@
 {
-  options,
   config,
   pkgs,
   lib,
@@ -52,6 +51,8 @@ in
       giteaServer = lib.mkOption {
         type = lib.types.str;
         default = config.services.gitea.settings.server.ROOT_URL;
+        defaultText = "\${toString config.services.gitea.settings.server.ROOT_URL}";
+        description = "The gitea server to serve gitea actions for.";
       };
 
       storeDependencies = lib.mkOption {

@@ -11,33 +11,51 @@
       type = lib.types.str;
       default = "peering-manager.${toString config.networking.fqdn}";
       defaultText = "peering-manager.\${toString config.networking.fqdn}";
+      description = ''
+        The primary domain name for this service.
+        Used for virtual host configuration, TLS certificates, and service URLs.
+      '';
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
     oidc = {
       domain = lib.mkOption {
         type = lib.types.str;
         default = "";
+        description = ''
+          The open id connect server used for authentication.
+          Leave null to disable oidc authentication.
+        '';
       };
       realm = lib.mkOption {
         type = lib.types.str;
         default = "main";
+        description = ''
+          The realm to use for the open id connect authentication.
+        '';
       };
       clientId = lib.mkOption {
         type = lib.types.str;
         default = config.secshell.peering-manager.domain;
         defaultText = "config.secshell.peering-manager.domain";
+        description = ''
+          The client id for the open id connect authentication.
+        '';
       };
     };
   };
   config = lib.mkIf config.secshell.peering-manager.enable {
     sops = {
-      secrets =
-        {
-          "peering-manager/secretKey".owner = "peering-manager";
-        }
-        // (lib.optionalAttrs (config.secshell.peering-manager.oidc.domain != "") {
-          "peering-manager/oidcSecret".owner = "peering-manager";
-        });
+      secrets = {
+        "peering-manager/secretKey".owner = "peering-manager";
+      }
+      // (lib.optionalAttrs (config.secshell.peering-manager.oidc.domain != "") {
+        "peering-manager/oidcSecret".owner = "peering-manager";
+      });
 
       templates."peering-manager/oidc-config".content = ''
         # CLIENT_ID and SECRET are required to authenticate against the provider

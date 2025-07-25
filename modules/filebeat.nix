@@ -4,6 +4,12 @@
     enable = lib.mkEnableOption "filebeat";
     graylogDomain = lib.mkOption {
       type = lib.types.str;
+      description = ''
+        The Graylog server domain or IP address where logs should be sent.
+        This should include the protocol and port if different from default:
+        - For GELF over TCP: `tcp://graylog.example.com:12201`
+        - For HTTP/HTTPS: `https://graylog.example.com:9000/api`
+      '';
     };
   };
   config = lib.mkIf config.secshell.filebeat.enable {

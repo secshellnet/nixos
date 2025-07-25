@@ -10,14 +10,42 @@
     # https://docs.cryptpad.org/en/dev_guide/general.html
     domain = lib.mkOption {
       type = lib.types.str;
-      default = "ucryptpad.${toString config.networking.fqdn}";
+      default = "cryptpad.${toString config.networking.fqdn}";
+      defaultText = "cryptpad.\${toString config.networking.fqdn}";
+      description = ''
+        The primary (unsafe) domain where CryptPad's sensitive data layer is loaded.
+        This URL handles encrypted user content in memory (drive, contacts, teams),
+        and must be served over HTTPS in production.
+
+        Security note: Vulnerabilities in the UI won't expose this layer's data
+        due to sandboxing, but this domain still requires strict security headers.
+      '';
     };
     sandboxDomain = lib.mkOption {
       type = lib.types.str;
-      default = "cryptpad.${toString config.networking.fqdn}";
+      default = "sandbox.cryptpad.${toString config.networking.fqdn}";
+      defaultText = "sandbox.cryptpad.\${toString config.networking.fqdn}";
+      description = ''
+        The isolated sandbox domain (loaded in an iframe) that renders the UI.
+        This domain never receives sensitive user data - it only displays document content
+        passed through the sandboxing system.
+
+        Operational note: Must share the same top-level domain as
+        the unsafe origin for cookie/tracking purposes.
+      '';
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
-    internal_ws_port = lib.mkOption { type = lib.types.port; };
+    internal_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
+    internal_ws_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The local port the websocket listener of the service listens on.
+      '';
+    };
   };
 
   config = lib.mkIf config.secshell.cryptpad.enable {

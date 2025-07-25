@@ -11,24 +11,51 @@
       type = lib.types.str;
       default = "auth.${toString config.networking.fqdn}";
       defaultText = "auth.\${toString config.networking.fqdn}";
+      description = ''
+        The primary domain name for this service.
+        Used for virtual host configuration, TLS certificates, and service URLs.
+      '';
     };
-    internal_port = lib.mkOption { type = lib.types.port; };
+    internal_port = lib.mkOption {
+      type = lib.types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
     useLocalDatabase = lib.mkOption {
       type = lib.types.bool;
       default = true;
+      description = ''
+        Whether to use a local database instance for this service.
+        When enabled (default), the service will deploy and manage
+        its own postgres database. When disabled, you must configure external
+        database connection parameters separately.
+      '';
     };
     database = {
       hostname = lib.mkOption {
         type = lib.types.str;
         default = "";
+        description = ''
+          Database server hostname. Not required if local database is being used.
+        '';
       };
       username = lib.mkOption {
         type = lib.types.str;
         default = "keycloak";
+        description = ''
+          Database user account with read/write privileges.
+          For PostgreSQL, ensure the user has CREATEDB permission
+          for initial setup if creating databases automatically.
+        '';
       };
       name = lib.mkOption {
         type = lib.types.str;
         default = "keycloak";
+        description = ''
+          Name of the database to use.
+          Will be created automatically if the user has permissions.
+        '';
       };
     };
     admin = {
@@ -38,7 +65,11 @@
       #};
       allowFrom = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [ ]; # means from everywhere
+        default = [ ];
+        description = ''
+          Source ip networks from which access to the admin interface is allowed.
+          Defaults to an empty array, which means from everywhere.
+        '';
       };
     };
   };
@@ -58,17 +89,16 @@
       #plugins = [
       #  keycloak-restrict-client-auth
       #];
-      database =
-        {
-          passwordFile = config.sops.secrets."keycloak/databasePassword".path;
-          createLocally = false;
-        }
-        // (lib.optionalAttrs (!config.secshell.keycloak.useLocalDatabase) {
-          useSSL = false;
-          host = config.secshell.keycloak.database.hostname;
-          username = config.secshell.keycloak.database.username;
-          name = config.secshell.keycloak.database.name;
-        });
+      database = {
+        passwordFile = config.sops.secrets."keycloak/databasePassword".path;
+        createLocally = false;
+      }
+      // (lib.optionalAttrs (!config.secshell.keycloak.useLocalDatabase) {
+        useSSL = false;
+        host = config.secshell.keycloak.database.hostname;
+        username = config.secshell.keycloak.database.username;
+        name = config.secshell.keycloak.database.name;
+      });
       settings = {
         http-host = "127.0.0.1";
         https-port = config.secshell.keycloak.internal_port;

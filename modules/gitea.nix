@@ -20,52 +20,106 @@ in
       type = types.str;
       default = "git.${toString config.networking.fqdn}";
       defaultText = "git.\${toString config.networking.fqdn}";
+      description = ''
+        The primary domain name for this service.
+        Used for virtual host configuration, TLS certificates, and service URLs.
+      '';
     };
-    internal_port = mkOption { type = types.port; };
+    internal_port = mkOption {
+      type = types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
     useLocalDatabase = mkOption {
       type = types.bool;
       default = true;
+      description = ''
+        Whether to use a local database instance for this service.
+        When enabled (default), the service will deploy and manage
+        its own postgres database. When disabled, you must configure external
+        database connection parameters separately.
+      '';
     };
     smtp = {
       hostname = mkOption {
         type = types.nullOr types.str;
         default = null;
+        example = "mail.secshell.net";
+        description = ''
+          SMTP server hostname for outgoing email.
+          Leave null to disable email functionality.
+        '';
       };
       from = mkOption {
         type = types.nullOr types.str;
         default = null;
+        example = "noreply@secshell.net";
+        description = ''
+          The email address shown as the sender in outgoing emails.
+
+          Important: When this doesn't match the SMTP service account's email address,
+          you must configure your mailserver to allow sending from this address (alias or sender rewriting)
+        '';
       };
       port = mkOption {
         type = types.port;
         default = 587;
+        example = 465;
+        description = ''
+          SMTP server port. STARTTLS uses 587, TLS uses 465 by default.
+        '';
       };
       user = mkOption {
         type = types.nullOr types.str;
         default = null;
+        description = ''
+          SMTP authentication username.
+          Typically the full email address of the service account which is being used to send mails..
+        '';
       };
       noReplyAddress = mkOption {
         type = types.nullOr types.str;
         default = config.secshell.gitea.from;
         defaultText = "config.secshell.gitea.from";
+        example = "support@secshell.net";
+        description = ''
+          "From" address for automated/non-reply emails.
+        '';
       };
     };
     database = {
       hostname = mkOption {
         type = types.str;
         default = "";
+        description = ''
+          Database server hostname. Not required if local database is being used.
+        '';
       };
       username = mkOption {
         type = types.str;
         default = "gitea";
+        description = ''
+          Database user account with read/write privileges.
+          For PostgreSQL, ensure the user has CREATEDB permission
+          for initial setup if creating databases automatically.
+        '';
       };
       name = mkOption {
         type = types.str;
         default = "gitea";
+        description = ''
+          Name of the database to use.
+          Will be created automatically if the user has permissions.
+        '';
       };
     };
     appName = mkOption {
       type = types.str;
       default = "Secure Shell Networks: Gitea";
+      description = ''
+        The application name of the gitea instance.
+      '';
     };
     sshPort = mkOption {
       type = types.port;
@@ -74,18 +128,33 @@ in
     requireSignInView = mkOption {
       type = types.bool;
       default = true;
+      description = ''
+        Enable this to force users to log in to view any page or to use API.
+        It could be set to "expensive" to block anonymous users accessing some
+        pages which consume a lot of resources, for example: block anonymous AI
+        crawlers from accessing repo code pages. The "expensive" mode is experimental
+        and subject to change.
+      '';
     };
     enableNotifyMail = mkOption {
       type = types.bool;
       default = true;
+      description = ''
+        Enable this to send e-mail to watchers of a repository when something happens,
+        like creating issues. Requires Mailer to be enabled.
+      '';
     };
     allowOnlyExternalRegistrations = mkOption {
       type = types.bool;
       default = true;
+      description = ''
+        Set to true to force registration only using third-party services.
+      '';
     };
     defaultKeepEmailPrivate = mkOption {
       type = types.bool;
       default = true;
+      description = "By default set users to keep their email address private.";
     };
   };
 

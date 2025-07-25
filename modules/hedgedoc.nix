@@ -17,39 +17,76 @@ in
       type = types.str;
       default = "md.${toString config.networking.fqdn}";
       defaultText = "md.\${toString config.networking.fqdn}";
+      description = ''
+        The primary domain name for this service.
+        Used for virtual host configuration, TLS certificates, and service URLs.
+      '';
     };
-    internal_port = mkOption { type = types.port; };
+    internal_port = mkOption {
+      type = types.port;
+      description = ''
+        The local port the service listens on.
+      '';
+    };
     useLocalDatabase = mkOption {
       type = types.bool;
       default = true;
+      description = ''
+        Whether to use a local database instance for this service.
+        When enabled (default), the service will deploy and manage
+        its own postgres database. When disabled, you must configure external
+        database connection parameters separately.
+      '';
     };
     database = {
       hostname = mkOption {
         type = types.str;
         default = "/run/postgresql";
+        description = ''
+          Database server hostname. Not required if local database is being used.
+        '';
       };
       username = mkOption {
         type = types.str;
         default = "hedgedoc";
+        description = ''
+          Database user account with read/write privileges.
+          For PostgreSQL, ensure the user has CREATEDB permission
+          for initial setup if creating databases automatically.
+        '';
       };
       name = mkOption {
         type = types.str;
         default = "hedgedoc";
+        description = ''
+          Name of the database to use.
+          Will be created automatically if the user has permissions.
+        '';
       };
     };
     oidc = {
       domain = mkOption {
         type = types.str;
         default = "";
+        description = ''
+          The open id connect server used for authentication.
+          Leave null to disable oidc authentication.
+        '';
       };
       realm = mkOption {
         type = types.str;
         default = "main";
+        description = ''
+          The realm to use for the open id connect authentication.
+        '';
       };
       clientId = mkOption {
         type = types.str;
         default = cfg.domain;
         defaultText = "config.secshell.hedgedoc.domain";
+        description = ''
+          The client id for the open id connect authentication.
+        '';
       };
     };
   };

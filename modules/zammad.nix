@@ -19,15 +19,25 @@ in
       type = types.str;
       default = "support.${toString config.networking.fqdn}";
       defaultText = "support.\${toString config.networking.fqdn}";
+      description = ''
+        The primary domain name for this service.
+        Used for virtual host configuration, TLS certificates, and service URLs.
+      '';
     };
     ports = {
       http = mkOption {
         type = types.port;
         default = 3000;
+        description = ''
+          The local port the service listens on.
+        '';
       };
       websocket = mkOption {
         type = types.port;
         default = 6042;
+        description = ''
+          The local port the websocket listener of the service listens on.
+        '';
       };
     };
   };

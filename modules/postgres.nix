@@ -20,10 +20,14 @@ in
     userPasswords = mkOption {
       type = types.attrsOf types.path;
       default = { };
+      description = ''
+        The passwords for the user accounts to be created declarative.
+      '';
     };
     expose = mkOption {
       type = types.bool;
       default = false;
+      description = "Whether to expose the postgresql instance on all ip addresses of the host.";
     };
   };
 
