@@ -69,8 +69,8 @@ in
         modsecurity_crs = pkgs.fetchFromGitHub {
           owner = "coreruleset";
           repo = "coreruleset";
-          rev = "v4.0.0";
-          sha256 = "TErAhbD77Oa2IauqBnLD+lMk4aI0hWgLb4CcCjqQRdQ=";
+          rev = "v4.16.0";
+          hash = "sha256-RYCv5ujnzLua26OtGBi1r5+8qZKddmKb/8No4cfIhTE=";
         };
         modsecurity_conf = pkgs.writeText "modsecurity.conf" ''
           SecAuditEngine RelevantOnly
