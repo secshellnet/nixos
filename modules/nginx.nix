@@ -4,6 +4,16 @@
   pkgs,
   ...
 }:
+let
+  # generate multiline string of modsecurity rules with automatic indexing
+  genModsecRules =
+    rules:
+    builtins.concatStringsSep "\n" (
+      lib.lists.imap0 (
+        i: v: builtins.replaceStrings [ "id:AUTO" ] [ "id:${toString (10000 + i)}" ] v
+      ) rules
+    );
+in
 {
   options.secshell.nginx = {
     openFirewall = lib.mkOption {
@@ -25,17 +35,27 @@
         type = lib.types.int;
         default = 1;
       };
+
+      preRules = lib.mkOption {
+        type = with lib.types; listOf lines;
+        default = [ ];
+      };
       pre = lib.mkOption {
         type = lib.types.lines;
-        default = "";
-      };
-      post = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
+        default = genModsecRules config.secshell.nginx.modsecurity.preRules;
       };
       preFile = lib.mkOption {
         type = lib.types.path;
         default = pkgs.writeText "modsecurity_pre.conf" config.secshell.nginx.modsecurity.pre;
+      };
+
+      postRules = lib.mkOption {
+        type = with lib.types; listOf lines;
+        default = [ ];
+      };
+      post = lib.mkOption {
+        type = lib.types.lines;
+        default = genModsecRules config.secshell.nginx.modsecurity.postRules;
       };
       postFile = lib.mkOption {
         type = lib.types.path;
