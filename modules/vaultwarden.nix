@@ -106,13 +106,9 @@ in
     # base
     {
       sops = {
-        secrets = {
-          "vaultwarden/adminToken" = { };
-          "vaultwarden/hibpApiKey" = { };
-        };
+        secrets."vaultwarden/adminToken" = { };
         templates."vaultwarden/env".content = ''
           ADMIN_TOKEN=${config.sops.placeholder."vaultwarden/adminToken"}
-          HIBP_API_KEY=${config.sops.placeholder."vaultwarden/hibpApiKey"}
         '';
       };
 
