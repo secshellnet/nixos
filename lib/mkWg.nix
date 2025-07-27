@@ -39,13 +39,12 @@ let
   inherit (libS.net) getWgLocalPort getWgRemoteAddr getWgRemotePort;
 in
 {
-  sops.secrets =
-    {
-      "${wgPrivateKeySops}" = { };
-    }
-    // (lib.optionalAttrs (wgPskSops != null) {
-      "${wgPskSops}" = { };
-    });
+  sops.secrets = {
+    "${wgPrivateKeySops}" = { };
+  }
+  // (lib.optionalAttrs (wgPskSops != null) {
+    "${wgPskSops}" = { };
+  });
 
   networking = {
     ifstate.settings = {

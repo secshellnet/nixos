@@ -273,7 +273,7 @@
             (lib.mkIf config.secshell.netbox.plugin.napalm (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
                 dependencies = previous.dependencies ++ [
-                  (ps.napalm-ros.overridePythonAttrs (prev: {
+                  (ps.napalm-ros.overridePythonAttrs (_previous: {
                     disabled = false;
                   }))
                 ];

@@ -50,23 +50,22 @@
             # netns must exist, before firewall rules can be applied
             "ifstate.service"
           ];
-          serviceConfig =
-            {
-              inherit (cfg.serviceConfig) Type RemainAfterExit StateDirectory;
-            }
-            // builtins.listToAttrs (
-              map
-                (key: {
-                  name = key;
-                  value = map' mapFunc cfg.serviceConfig.${key};
-                })
-                [
-                  "ExecStart"
-                  "ExecStartPost"
-                  "ExecStop"
-                  "ExecReload"
-                ]
-            );
+          serviceConfig = {
+            inherit (cfg.serviceConfig) Type RemainAfterExit StateDirectory;
+          }
+          // builtins.listToAttrs (
+            map
+              (key: {
+                name = key;
+                value = map' mapFunc cfg.serviceConfig.${key};
+              })
+              [
+                "ExecStart"
+                "ExecStartPost"
+                "ExecStop"
+                "ExecReload"
+              ]
+          );
           unitConfig.DefaultDependencies = false;
         };
     }) config.secshell.firewall.netns

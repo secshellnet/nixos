@@ -83,40 +83,39 @@
         password_config.enabled = !config.secshell.matrix.oidc; # allow login using username/password (disable for oidc)
         max_upload_size = "500M";
 
-        listeners =
-          [
-            {
-              bind_addresses = [ "127.0.0.1" ];
-              port = config.secshell.matrix.internal_port;
-              type = "http";
-              tls = false;
-              x_forwarded = true;
-              resources = [
-                {
-                  names = [
-                    "client"
-                    "federation"
-                  ];
-                  compress = false;
-                }
-              ];
-            }
-          ]
-          ++ (lib.optionalAttrs (!config.services.matrix-synapse.settings.enable_metrics) [
-            {
-              bind_addresses = [ "127.0.0.1" ];
-              port = config.secshell.matrix.metrics_port;
-              type = "http";
-              tls = false;
-              x_forwarded = true;
-              resources = [
-                {
-                  names = [ "metrics" ];
-                  compress = false;
-                }
-              ];
-            }
-          ]);
+        listeners = [
+          {
+            bind_addresses = [ "127.0.0.1" ];
+            port = config.secshell.matrix.internal_port;
+            type = "http";
+            tls = false;
+            x_forwarded = true;
+            resources = [
+              {
+                names = [
+                  "client"
+                  "federation"
+                ];
+                compress = false;
+              }
+            ];
+          }
+        ]
+        ++ (lib.optionalAttrs (!config.services.matrix-synapse.settings.enable_metrics) [
+          {
+            bind_addresses = [ "127.0.0.1" ];
+            port = config.secshell.matrix.metrics_port;
+            type = "http";
+            tls = false;
+            x_forwarded = true;
+            resources = [
+              {
+                names = [ "metrics" ];
+                compress = false;
+              }
+            ];
+          }
+        ]);
       };
     };
 
