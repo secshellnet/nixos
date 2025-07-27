@@ -3,11 +3,22 @@
   lib,
   ...
 }:
+let
+  cfg = config.secshell.vaultwarden;
+  inherit (lib)
+    mkIf
+    types
+    mkEnableOption
+    mkOption
+    mkMerge
+    mkAfter
+    ;
+in
 {
   options.secshell.vaultwarden = {
-    enable = lib.mkEnableOption "vaultwarden";
-    domain = lib.mkOption {
-      type = lib.types.str;
+    enable = mkEnableOption "vaultwarden";
+    domain = mkOption {
+      type = types.str;
       default = "vault.${toString config.networking.fqdn}";
       defaultText = "vault.\${toString config.networking.fqdn}";
       description = ''
@@ -15,15 +26,15 @@
         Used for virtual host configuration, TLS certificates, and service URLs.
       '';
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
+    internal_port = mkOption {
+      type = types.port;
       description = ''
         The local port the service listens on.
       '';
     };
     smtp = {
-      hostname = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
+      hostname = mkOption {
+        type = types.nullOr types.str;
         default = null;
         example = "mail.secshell.net";
         description = ''
@@ -31,8 +42,8 @@
           Leave null to disable email functionality.
         '';
       };
-      from = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
+      from = mkOption {
+        type = types.nullOr types.str;
         default = null;
         example = "noreply@secshell.net";
         description = ''
@@ -42,20 +53,20 @@
           you must configure your mailserver to allow sending from this address (alias or sender rewriting)
         '';
       };
-      security = lib.mkOption {
-        type = lib.types.str;
+      security = mkOption {
+        type = types.str;
         default = "starttls";
       };
-      port = lib.mkOption {
-        type = lib.types.port;
+      port = mkOption {
+        type = types.port;
         default = 587;
         description = ''
           SMTP server port. STARTTLS uses 587, TLS uses 465 by default.
         '';
       };
     };
-    useLocalDatabase = lib.mkOption {
-      type = lib.types.bool;
+    useLocalDatabase = mkOption {
+      type = types.bool;
       default = true;
       description = ''
         Whether to use a local database instance for this service.
@@ -65,15 +76,15 @@
       '';
     };
     database = {
-      hostname = lib.mkOption {
-        type = lib.types.str;
+      hostname = mkOption {
+        type = types.str;
         default = "";
         description = ''
           Database server hostname. Not required if local database is being used.
         '';
       };
-      username = lib.mkOption {
-        type = lib.types.str;
+      username = mkOption {
+        type = types.str;
         default = "vaultwarden";
         description = ''
           Database user account with read/write privileges.
@@ -81,8 +92,8 @@
           for initial setup if creating databases automatically.
         '';
       };
-      name = lib.mkOption {
-        type = lib.types.str;
+      name = mkOption {
+        type = types.str;
         default = "vaultwarden";
         description = ''
           Name of the database to use.
@@ -91,95 +102,108 @@
       };
     };
   };
-  config = lib.mkIf config.secshell.vaultwarden.enable {
-    sops = {
-      secrets = {
-        "vaultwarden/adminToken" = { };
-        "vaultwarden/hibpApiKey" = { };
-      }
-      // (lib.optionalAttrs (!config.secshell.vaultwarden.useLocalDatabase) {
-        "vaultwarden/databasePassword" = { };
-      })
-      // (lib.optionalAttrs
-        (config.secshell.vaultwarden.smtp.hostname != null && config.secshell.vaultwarden.smtp.from != null)
-        {
-          "vaultwarden/smtpUsername" = { };
-          "vaultwarden/smtpPassword" = { };
-        }
-      );
-
-      templates."vaultwarden/env".content =
-        let
-          databaseUsername = config.secshell.vaultwarden.database.username;
-          databasePassword = config.sops.placeholder."vaultwarden/databasePassword";
-          databaseHostname = config.secshell.vaultwarden.database.hostname;
-          databaseName = config.secshell.vaultwarden.database.name;
-          databaseUri = "postgresql://${databaseUsername}:${databasePassword}@${databaseHostname}/${databaseName}";
-        in
-        ''
+  config = mkIf cfg.enable (mkMerge [
+    # base
+    {
+      sops = {
+        secrets = {
+          "vaultwarden/adminToken" = { };
+          "vaultwarden/hibpApiKey" = { };
+        };
+        templates."vaultwarden/env".content = ''
           ADMIN_TOKEN=${config.sops.placeholder."vaultwarden/adminToken"}
           HIBP_API_KEY=${config.sops.placeholder."vaultwarden/hibpApiKey"}
-          ${lib.optionalString (!config.secshell.vaultwarden.useLocalDatabase) "DATABASE_URL=${databaseUri}"}
-          ${lib.optionalString (
-            config.secshell.vaultwarden.smtp.hostname != null && config.secshell.vaultwarden.smtp.from != null
-          ) "SMTP_USERNAME=${config.sops.placeholder."vaultwarden/smtpUsername"}"}
-          ${lib.optionalString (
-            config.secshell.vaultwarden.smtp.hostname != null && config.secshell.vaultwarden.smtp.from != null
-          ) "SMTP_PASSWORD=${config.sops.placeholder."vaultwarden/smtpPassword"}"}
         '';
-    };
+      };
 
-    services.postgresql = lib.mkIf config.secshell.vaultwarden.useLocalDatabase {
-      enable = true;
-      ensureDatabases = [ "vaultwarden" ];
-    };
+      services = {
+        vaultwarden = {
+          enable = true;
+          environmentFile = config.sops.templates."vaultwarden/env".path;
+          config = {
+            ROCKET_ADDRESS = "127.0.0.1";
+            ROCKET_PORT = cfg.internal_port;
 
-    services.vaultwarden = {
-      enable = true;
-      environmentFile = config.sops.templates."vaultwarden/env".path;
-      config = {
-        ROCKET_ADDRESS = "127.0.0.1";
-        ROCKET_PORT = config.secshell.vaultwarden.internal_port;
+            DOMAIN = "https://${cfg.domain}";
 
-        DOMAIN = "https://${config.secshell.vaultwarden.domain}";
+            SIGNUPS_ALLOWED = false;
+            INVITATIONS_ALLOWED = false;
 
-        DATABASE_URL = lib.mkIf config.secshell.vaultwarden.useLocalDatabase "postgresql:///vaultwarden?host=/run/postgresql";
+            ORG_EVENTS_ENABLED = true;
+            EVENTS_DAYS_RETAIN = 30;
+          };
+          dbBackend = "postgresql";
+        };
 
-        SIGNUPS_ALLOWED = false;
-        INVITATIONS_ALLOWED = false;
+        nginx = {
+          enable = true;
+          virtualHosts."${toString cfg.domain}" = {
+            locations = {
+              "/" = {
+                proxyPass = "http://127.0.0.1:${toString cfg.internal_port}/";
+                proxyWebsockets = true;
+              };
+            };
+            serverName = toString cfg.domain;
 
-        ORG_EVENTS_ENABLED = true;
-        EVENTS_DAYS_RETAIN = 30;
-      }
-      // (lib.optionalAttrs
-        (config.secshell.vaultwarden.smtp.hostname != null && config.secshell.vaultwarden.smtp.from != null)
-        {
-          SMTP_HOST = config.secshell.vaultwarden.smtp.hostname;
-          SMTP_FROM = config.secshell.vaultwarden.smtp.from;
-          SMTP_FROM_NAME = "Vaultwarden";
-          SMTP_SECURITY = config.secshell.vaultwarden.smtp.security;
-          SMTP_PORT = config.secshell.vaultwarden.smtp.port;
-        }
-      );
-      dbBackend = "postgresql";
-    };
-
-    services.nginx = {
-      enable = true;
-      virtualHosts."${toString config.secshell.vaultwarden.domain}" = {
-        locations = {
-          "/" = {
-            proxyPass = "http://127.0.0.1:${toString config.secshell.vaultwarden.internal_port}/";
-            proxyWebsockets = true;
+            # use ACME DNS-01 challenge
+            useACMEHost = toString cfg.domain;
+            forceSSL = true;
           };
         };
-        serverName = toString config.secshell.vaultwarden.domain;
-
-        # use ACME DNS-01 challenge
-        useACMEHost = toString config.secshell.vaultwarden.domain;
-        forceSSL = true;
       };
-    };
-    security.acme.certs."${toString config.secshell.vaultwarden.domain}" = { };
-  };
+      security.acme.certs."${toString cfg.domain}" = { };
+    }
+
+    # local database
+    (mkIf cfg.useLocalDatabase {
+      services.postgresql = {
+        enable = true;
+        ensureDatabases = [ "vaultwarden" ];
+      };
+
+      services.vaultwarden.config = {
+        DATABASE_URL = "postgresql:///vaultwarden?host=/run/postgresql";
+      };
+    })
+
+    # external database
+    (mkIf (!cfg.useLocalDatabase) {
+      sops = {
+        secrets."vaultwarden/databasePassword" = { };
+        templates."vaultwarden/env".content =
+          let
+            dbUser = cfg.database.username;
+            dbPass = config.sops.placeholder."vaultwarden/databasePassword";
+            dbHost = cfg.database.hostname;
+            dbName = cfg.database.name;
+          in
+          mkAfter ''
+            DATABASE_URL=postgresql://${dbUser}:${dbPass}@${dbHost}/${dbName}
+          '';
+      };
+    })
+
+    # smtp
+    (mkIf (cfg.smtp.hostname != null && cfg.smtp.from != null) {
+      sops = {
+        secrets = {
+          "vaultwarden/smtpUsername" = { };
+          "vaultwarden/smtpPassword" = { };
+        };
+        templates."vaultwarden/env".content = mkAfter ''
+          SMTP_USERNAME=${config.sops.placeholder."vaultwarden/smtpUsername"}
+          SMTP_PASSWORD=${config.sops.placeholder."vaultwarden/smtpPassword"}
+        '';
+      };
+
+      services.vaultwarden.config = {
+        SMTP_HOST = cfg.smtp.hostname;
+        SMTP_FROM = cfg.smtp.from;
+        SMTP_FROM_NAME = "Vaultwarden";
+        SMTP_SECURITY = cfg.smtp.security;
+        SMTP_PORT = cfg.smtp.port;
+      };
+    })
+  ]);
 }
