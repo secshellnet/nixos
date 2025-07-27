@@ -5,16 +5,33 @@
   pkgs-unstable,
   ...
 }:
+let
+  cfg = config.secshell.netbox;
+  inherit (lib)
+    mkIf
+    types
+    mkEnableOption
+    mkOption
+    mkMerge
+    ;
+  mkDisableOption =
+    name:
+    mkEnableOption name
+    // {
+      default = true;
+      example = false;
+    };
+in
 {
   # Note for initial installation / database initialization: systemd timeout is way to small to finish the whole setup.
   # Run the deployment (or netbox systemd job) multiple times, until it works (arround 5 times required)
 
   options.secshell.netbox = {
-    enable = lib.mkEnableOption "netbox";
+    enable = mkEnableOption "netbox";
     package = lib.mkPackageOption pkgs-unstable "netbox" { } // {
       apply =
         pkg:
-        if config.secshell.netbox.oidc.endpoint != "" then
+        if cfg.oidc.endpoint != "" then
           pkg.overrideAttrs (old: {
             installPhase = old.installPhase + ''
               ln -s ${./pipeline.py} $out/opt/netbox/netbox/netbox/secshell_pipeline.py
@@ -28,8 +45,8 @@
         will be automaticlly added to the package.
       '';
     };
-    domain = lib.mkOption {
-      type = lib.types.str;
+    domain = mkOption {
+      type = types.str;
       default = "netbox.${toString config.networking.fqdn}";
       defaultText = "netbox.\${toString config.networking.fqdn}";
       description = ''
@@ -37,32 +54,32 @@
         Used for virtual host configuration, TLS certificates, and service URLs.
       '';
     };
-    internal_port = lib.mkOption {
-      type = lib.types.port;
+    internal_port = mkOption {
+      type = types.port;
       description = ''
         The local port the service listens on.
       '';
     };
     oidc = {
-      endpoint = lib.mkOption {
-        type = lib.types.str;
+      endpoint = mkOption {
+        type = types.str;
         default = "";
         description = ''
           The open id connect server used for authentication.
           Leave null to disable oidc authentication.
         '';
       };
-      clientId = lib.mkOption {
-        type = lib.types.str;
-        default = config.secshell.netbox.domain;
+      clientId = mkOption {
+        type = types.str;
+        default = cfg.domain;
         defaultText = "config.secshell.netbox.domain";
         description = ''
           The client id for the open id connect authentication.
         '';
       };
     };
-    useLocalDatabase = lib.mkOption {
-      type = lib.types.bool;
+    useLocalDatabase = mkOption {
+      type = types.bool;
       default = true;
       description = ''
         Whether to use a local database instance for this service.
@@ -72,15 +89,15 @@
       '';
     };
     database = {
-      hostname = lib.mkOption {
-        type = lib.types.str;
+      hostname = mkOption {
+        type = types.str;
         default = "";
         description = ''
           Database server hostname. Not required if local database is being used.
         '';
       };
-      username = lib.mkOption {
-        type = lib.types.str;
+      username = mkOption {
+        type = types.str;
         default = "netbox";
         description = ''
           Database user account with read/write privileges.
@@ -88,8 +105,8 @@
           for initial setup if creating databases automatically.
         '';
       };
-      name = lib.mkOption {
-        type = lib.types.str;
+      name = mkOption {
+        type = types.str;
         default = "netbox";
         description = ''
           Name of the database to use.
@@ -98,95 +115,124 @@
       };
     };
     plugin = {
-      bgp = lib.mkEnableOption "netbox bgp plugin";
-      documents = lib.mkEnableOption "netbox documents plugin";
-      floorplan = lib.mkEnableOption "netbox floorplan plugin";
-      qrcode = lib.mkEnableOption "netbox qrcode plugin";
-      topologyViews = lib.mkEnableOption "netbox topology views plugin";
-      proxbox = lib.mkEnableOption "netbox proxbox plugin";
-      contract = lib.mkEnableOption "netbox contract plugin";
-      interface-synchronization = lib.mkEnableOption "netbox interface-synchronization plugin";
-      dns = lib.mkEnableOption "netbox dns plugin";
-      napalm = lib.mkEnableOption "netbox napalm plugin";
-      reorder-rack = lib.mkEnableOption "netbox reorder-rack plugin";
-      prometheus-sd = lib.mkEnableOption "netbox prometheus-sd plugin";
-      kea = lib.mkEnableOption "netbox kea plugin";
-      attachments = lib.mkEnableOption "netbox attachments plugin";
+      bgp = mkEnableOption "netbox bgp plugin";
+      documents = mkEnableOption "netbox documents plugin";
+      floorplan = mkEnableOption "netbox floorplan plugin";
+      qrcode = mkEnableOption "netbox qrcode plugin";
+      topologyViews = mkEnableOption "netbox topology views plugin";
+      proxbox = mkEnableOption "netbox proxbox plugin";
+      contract = mkEnableOption "netbox contract plugin";
+      interface-synchronization = mkEnableOption "netbox interface-synchronization plugin";
+      dns = mkEnableOption "netbox dns plugin";
+      napalm = {
+        enable = mkEnableOption "netbox napalm plugin";
+        username = mkOption {
+          type = types.str;
+          default = "napalm";
+          description = ''
+            The username used for NAPALM authentication.
+          '';
+        };
+        passwordFile = mkOption {
+          type = types.path;
+          description = ''
+            File to a password used for NAPALM authentication.
+          '';
+        };
+        ssl = mkDisableOption "ssl/tls for napalm connections";
+      };
+      reorder-rack = mkEnableOption "netbox reorder-rack plugin";
+      prometheus-sd = mkEnableOption "netbox prometheus-sd plugin";
+      kea = mkEnableOption "netbox kea plugin";
+      attachments = mkEnableOption "netbox attachments plugin";
     };
   };
-  config = lib.mkIf config.secshell.netbox.enable {
-    sops.secrets = {
-      "netbox/secretKey".owner = "netbox";
-    }
-    // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
-      "netbox/socialAuthSecret".owner = "netbox";
-    })
-    // (lib.optionalAttrs (!config.secshell.netbox.useLocalDatabase) {
-      "netbox/databasePassword".owner = "netbox";
-    });
 
-    services = {
-      postgresql = {
-        enable = lib.mkForce config.secshell.netbox.useLocalDatabase;
-        ensureDatabases = lib.mkIf config.secshell.netbox.useLocalDatabase [ "netbox" ];
-      };
+  config = mkIf cfg.enable (mkMerge [
+    # base
+    {
+      sops.secrets."netbox/secretKey".owner = "netbox";
 
-      netbox = {
-        enable = true;
-        package = config.secshell.netbox.package;
-        secretKeyFile = config.sops.secrets."netbox/secretKey".path;
-        port = config.secshell.netbox.internal_port;
-        listenAddress = "127.0.0.1";
-        settings = {
-          LOGIN_REQUIRED = true;
-          TIME_ZONE = "Europe/Berlin";
-          METRICS_ENABLED = true;
-        }
-        // (lib.optionalAttrs (config.secshell.netbox.oidc.endpoint != "") {
-          # https://stackoverflow.com/questions/53550321/keycloak-gatekeeper-aud-claim-and-client-id-do-not-match
-          REMOTE_AUTH_ENABLED = true;
-          REMOTE_AUTH_AUTO_CREATE_USER = true;
-          REMOTE_AUTH_GROUP_SYNC_ENABLED = true;
-          SOCIAL_AUTH_JSONFIELD_ENABLED = true;
-          SOCIAL_AUTH_VERIFY_SSL = true;
-          #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
-          REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth";
-
-          #REMOTE_AUTH_GROUP_SEPARATOR=",";
-          REMOTE_AUTH_SUPERUSER_GROUPS = [ "superuser" ];
-          REMOTE_AUTH_STAFF_GROUPS = [ "staff" ];
-          REMOTE_AUTH_DEFAULT_GROUPS = [ "staff" ];
-          SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = config.secshell.netbox.oidc.endpoint;
-          SOCIAL_AUTH_OIDC_KEY = config.secshell.netbox.oidc.clientId;
-          LOGOUT_REDIRECT_URL = "${config.secshell.netbox.oidc.endpoint}end-session/";
-        })
-        // {
-          PLUGINS = [
-            (lib.mkIf config.secshell.netbox.plugin.bgp "netbox_bgp")
-            (lib.mkIf config.secshell.netbox.plugin.documents "netbox_documents")
-            (lib.mkIf config.secshell.netbox.plugin.floorplan "netbox_floorplan")
-            (lib.mkIf config.secshell.netbox.plugin.qrcode "netbox_qrcode")
-            (lib.mkIf config.secshell.netbox.plugin.topologyViews "netbox_topology_views")
-            #(lib.mkIf config.secshell.netbox.plugin.proxbox "netbox_proxbox")
-            (lib.mkIf config.secshell.netbox.plugin.contract "netbox_contract")
-            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization "netbox_interface_synchronization")
-            (lib.mkIf config.secshell.netbox.plugin.dns "netbox_dns")
-            (lib.mkIf config.secshell.netbox.plugin.napalm "netbox_napalm_plugin")
-            (lib.mkIf config.secshell.netbox.plugin.reorder-rack "netbox_reorder_rack")
-            (lib.mkIf config.secshell.netbox.plugin.prometheus-sd "netbox_prometheus_sd")
-            #(lib.mkIf config.secshell.netbox.plugin.kea "netbox_kea")
-            (lib.mkIf config.secshell.netbox.plugin.attachments "netbox_attachments")
-          ];
+      services = {
+        netbox = {
+          enable = true;
+          package = cfg.package;
+          secretKeyFile = config.sops.secrets."netbox/secretKey".path;
+          port = cfg.internal_port;
+          listenAddress = "127.0.0.1";
+          settings = {
+            LOGIN_REQUIRED = true;
+            TIME_ZONE = "Europe/Berlin";
+            METRICS_ENABLED = true;
+          };
         };
+        nginx = {
+          enable = true;
+          virtualHosts."${toString cfg.domain}" = {
+            locations = {
+              "/".proxyPass = "http://127.0.0.1:${toString cfg.internal_port}";
+              "/static/".alias = "${config.services.netbox.dataDir}/static/";
+            };
+            serverName = toString cfg.domain;
 
+            # use ACME DNS-01 challenge
+            useACMEHost = toString cfg.domain;
+            forceSSL = true;
+          };
+        };
+      };
+      security.acme.certs."${toString cfg.domain}" = { };
+
+      # adjust permissions to netbox static directory (so nginx user can read/browse these files)
+      environment.systemPackages = with pkgs; [ acl ];
+      systemd.services.netboxSetAcls = {
+        script = ''
+          # Set ACLs recursively for all files and directories under the NetBox data directory
+          ${pkgs.acl}/bin/setfacl -m 'u:${config.services.nginx.user}:rx' ${config.services.netbox.dataDir}
+          find ${config.services.netbox.dataDir}/static -type  d -exec ${pkgs.acl}/bin/setfacl -m 'u:${config.services.nginx.user}:rx' {} +   # world readeable
+          find ${config.services.netbox.dataDir}/static -type f -exec ${pkgs.acl}/bin/setfacl -m 'u:${config.services.nginx.user}:r' {} +    # world readeable
+        '';
+        wantedBy = [ "multi-user.target" ];
+      };
+    }
+
+    # plugins
+    {
+      services.netbox = {
+        settings.PLUGINS = [
+          (mkIf cfg.plugin.bgp "netbox_bgp")
+          (mkIf cfg.plugin.documents "netbox_documents")
+          (mkIf cfg.plugin.floorplan "netbox_floorplan")
+          (mkIf cfg.plugin.qrcode "netbox_qrcode")
+          (mkIf cfg.plugin.topologyViews "netbox_topology_views")
+          #(mkIf cfg.plugin.proxbox "netbox_proxbox")
+          (mkIf cfg.plugin.contract "netbox_contract")
+          (mkIf cfg.plugin.interface-synchronization "netbox_interface_synchronization")
+          (mkIf cfg.plugin.dns "netbox_dns")
+          (mkIf cfg.plugin.napalm.enable "netbox_napalm_plugin")
+          (mkIf cfg.plugin.reorder-rack "netbox_reorder_rack")
+          (mkIf cfg.plugin.prometheus-sd "netbox_prometheus_sd")
+          #(mkIf cfg.plugin.kea "netbox_kea")
+          (mkIf cfg.plugin.attachments "netbox_attachments")
+        ];
+        extraConfig = mkIf cfg.plugin.napalm.enable ''
+          PLUGINS_CONFIG = {}
+          PLUGINS_CONFIG["netbox_napalm_plugin"] = {}
+          PLUGINS_CONFIG["netbox_napalm_plugin"]["NAPALM_USERNAME"] = "${cfg.plugin.napalm.username}"
+          with open("${cfg.plugin.napalm.passwordFile}", "r") as file:
+            PLUGINS_CONFIG["netbox_napalm_plugin"]["NAPALM_PASSWORD"] = file.readline()
+          PLUGINS_CONFIG["netbox_napalm_plugin"]["NAPALM_ARGS"] = { "netbox_default_ssl_params": ${
+            if cfg.plugin.napalm.ssl then "True" else "False"
+          } }
+        '';
         plugins =
           ps:
           #let
           #  plugins = ps.callPackage ./plugins { };
           #in
           [
-            #(lib.mkIf config.secshell.netbox.plugin.bgp ps.netbox-bgp)
-            (lib.mkIf config.secshell.netbox.plugin.bgp (
+            #(mkIf cfg.plugin.bgp ps.netbox-bgp)
+            (mkIf cfg.plugin.bgp (
               ps.netbox-bgp.overridePythonAttrs (previous: {
                 version = "0.16.0";
                 src = previous.src.override {
@@ -196,7 +242,7 @@
               })
             ))
 
-            (lib.mkIf config.secshell.netbox.plugin.documents (
+            (mkIf cfg.plugin.documents (
               ps.netbox-documents.overridePythonAttrs (previous: {
                 # https://github.com/NixOS/nixpkgs/pull/413944
                 version = "0.7.3";
@@ -217,7 +263,7 @@
                 ];
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.floorplan (
+            (mkIf cfg.plugin.floorplan (
               # https://github.com/NixOS/nixpkgs/pull/413224
               ps.netbox-floorplan-plugin.overridePythonAttrs (previous: {
                 version = "0.7.0";
@@ -227,7 +273,7 @@
                 };
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.qrcode (
+            (mkIf cfg.plugin.qrcode (
               # https://github.com/NixOS/nixpkgs/pull/411383
               ps.netbox-qrcode.overridePythonAttrs (previous: {
                 version = "0.0.18";
@@ -237,7 +283,7 @@
                 };
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.topologyViews (
+            (mkIf cfg.plugin.topologyViews (
               ps.netbox-topology-views.overridePythonAttrs (previous: {
                 # https://github.com/NixOS/nixpkgs/pull/412588
                 version = "4.3.0";
@@ -247,9 +293,9 @@
                 };
               })
             ))
-            #(lib.mkIf config.secshell.netbox.plugin.proxbox plugins.netbox-proxbox)
-            (lib.mkIf config.secshell.netbox.plugin.contract ps.netbox-contract)
-            (lib.mkIf config.secshell.netbox.plugin.interface-synchronization (
+            #(mkIf cfg.plugin.proxbox plugins.netbox-proxbox)
+            (mkIf cfg.plugin.contract ps.netbox-contract)
+            (mkIf cfg.plugin.interface-synchronization (
               # https://github.com/NixOS/nixpkgs/pull/413560
               ps.netbox-interface-synchronization.overridePythonAttrs (previous: {
                 version = "4.1.7";
@@ -259,7 +305,7 @@
                 };
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.dns (
+            (mkIf cfg.plugin.dns (
               ps.netbox-dns.overridePythonAttrs (previous: {
                 # https://github.com/NixOS/nixpkgs/pull/404982
                 version = "1.3.4";
@@ -269,8 +315,8 @@
                 };
               })
             ))
-            # upstream of napalm-plugin doesn't support 4.3 yet
-            (lib.mkIf config.secshell.netbox.plugin.napalm (
+            # upstream of napalm-plugin doesn't support netbox 4.3 yet
+            (mkIf cfg.plugin.napalm.enable (
               ps.netbox-napalm-plugin.overridePythonAttrs (previous: {
                 dependencies = previous.dependencies ++ [
                   (ps.napalm-ros.overridePythonAttrs (_previous: {
@@ -279,10 +325,10 @@
                 ];
               })
             ))
-            (lib.mkIf config.secshell.netbox.plugin.reorder-rack ps.netbox-reorder-rack)
-            (lib.mkIf config.secshell.netbox.plugin.prometheus-sd ps.netbox-plugin-prometheus-sd)
-            #(lib.mkIf config.secshell.netbox.plugin.kea plugins.netbox-kea)
-            (lib.mkIf config.secshell.netbox.plugin.attachments (
+            (mkIf cfg.plugin.reorder-rack ps.netbox-reorder-rack)
+            (mkIf cfg.plugin.prometheus-sd ps.netbox-plugin-prometheus-sd)
+            #(mkIf cfg.plugin.kea plugins.netbox-kea)
+            (mkIf cfg.plugin.attachments (
               ps.netbox-attachments.overridePythonAttrs (previous: {
                 # https://github.com/NixOS/nixpkgs/pull/408776
                 version = "8.0.4";
@@ -293,113 +339,121 @@
               })
             ))
           ];
+      };
+    }
 
-        # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
+    # local database
+    (mkIf cfg.useLocalDatabase {
+      services.postgresql = {
+        enable = true;
+        ensureDatabases = [ "netbox" ];
+      };
+    })
+
+    # external database
+    (mkIf (!cfg.useLocalDatabase) {
+      sops.secrets."netbox/databasePassword".owner = "netbox";
+
+      # see https://docs.netbox.dev/en/stable/configuration/required-parameters/#database
+      services.netbox.extraConfig = ''
+        DATABASE = {
+          'ENGINE': 'django.db.backends.postgresql',
+          'NAME': '${cfg.database.name}',
+          'USER': '${cfg.database.username}',
+          'HOST': '${cfg.database.hostname}',
+          'CONN_MAX_AGE': 300,
+        }
+        with open("${config.sops.secrets."netbox/databasePassword".path}", "r") as file:
+          DATABASE['PASSWORD'] = file.readline()
+      '';
+    })
+
+    # oidc
+    (mkIf (cfg.oidc.endpoint != "") {
+      sops.secrets."netbox/socialAuthSecret".owner = "netbox";
+
+      services.netbox = {
+        settings = {
+          # https://stackoverflow.com/questions/53550321/keycloak-gatekeeper-aud-claim-and-client-id-do-not-match
+          REMOTE_AUTH_ENABLED = true;
+          REMOTE_AUTH_AUTO_CREATE_USER = true;
+          REMOTE_AUTH_GROUP_SYNC_ENABLED = true;
+          SOCIAL_AUTH_JSONFIELD_ENABLED = true;
+          SOCIAL_AUTH_VERIFY_SSL = true;
+          #SOCIAL_AUTH_OIDC_SCOPE = ["groups" "roles"];
+          REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth";
+
+          #REMOTE_AUTH_GROUP_SEPARATOR=",";
+          REMOTE_AUTH_SUPERUSER_GROUPS = [ "superuser" ];
+          REMOTE_AUTH_STAFF_GROUPS = [ "staff" ];
+          REMOTE_AUTH_DEFAULT_GROUPS = [ "staff" ];
+          SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = cfg.oidc.endpoint;
+          SOCIAL_AUTH_OIDC_KEY = cfg.oidc.clientId;
+          LOGOUT_REDIRECT_URL = "${cfg.oidc.endpoint}end-session/";
+        };
         extraConfig = ''
-          ${lib.optionalString (!config.secshell.netbox.useLocalDatabase) ''
-            DATABASE = {
-              'ENGINE': 'django.db.backends.postgresql',
-              'NAME': '${config.secshell.netbox.database.name}',
-              'USER': '${config.secshell.netbox.database.username}',
-              'HOST': '${config.secshell.netbox.database.hostname}',
-              'CONN_MAX_AGE': 300,
-            }
-            with open("${config.sops.secrets."netbox/databasePassword".path}", "r") as file:
-              DATABASE['PASSWORD'] = file.readline()
-          ''}
+          with open("${config.sops.secrets."netbox/socialAuthSecret".path}", "r") as file:
+            SOCIAL_AUTH_OIDC_SECRET = file.readline()
 
-          ${lib.optionalString (config.secshell.netbox.oidc.endpoint != "") ''
-            with open("${config.sops.secrets."netbox/socialAuthSecret".path}", "r") as file:
-              SOCIAL_AUTH_OIDC_SECRET = file.readline()
+          SOCIAL_AUTH_PIPELINE = (
+            ###################
+            # Default pipelines
+            ###################
 
-            SOCIAL_AUTH_PIPELINE = (
-              ###################
-              # Default pipelines
-              ###################
+            # Get the information we can about the user and return it in a simple
+            # format to create the user instance later. In some cases the details are
+            # already part of the auth response from the provider, but sometimes this
+            # could hit a provider API.
+            'social_core.pipeline.social_auth.social_details',
 
-              # Get the information we can about the user and return it in a simple
-              # format to create the user instance later. In some cases the details are
-              # already part of the auth response from the provider, but sometimes this
-              # could hit a provider API.
-              'social_core.pipeline.social_auth.social_details',
+            # Get the social uid from whichever service we're authing thru. The uid is
+            # the unique identifier of the given user in the provider.
+            'social_core.pipeline.social_auth.social_uid',
 
-              # Get the social uid from whichever service we're authing thru. The uid is
-              # the unique identifier of the given user in the provider.
-              'social_core.pipeline.social_auth.social_uid',
+            # Verifies that the current auth process is valid within the current
+            # project, this is where emails and domains whitelists are applied (if
+            # defined).
+            'social_core.pipeline.social_auth.auth_allowed',
 
-              # Verifies that the current auth process is valid within the current
-              # project, this is where emails and domains whitelists are applied (if
-              # defined).
-              'social_core.pipeline.social_auth.auth_allowed',
+            # Checks if the current social-account is already associated in the site.
+            'social_core.pipeline.social_auth.social_user',
 
-              # Checks if the current social-account is already associated in the site.
-              'social_core.pipeline.social_auth.social_user',
+            # Make up a username for this person, appends a random string at the end if
+            # there's any collision.
+            'social_core.pipeline.user.get_username',
 
-              # Make up a username for this person, appends a random string at the end if
-              # there's any collision.
-              'social_core.pipeline.user.get_username',
+            # Send a validation email to the user to verify its email address.
+            # Disabled by default.
+            # 'social_core.pipeline.mail.mail_validation',
 
-              # Send a validation email to the user to verify its email address.
-              # Disabled by default.
-              # 'social_core.pipeline.mail.mail_validation',
+            # Associates the current social details with another user account with
+            # a similar email address. Disabled by default.
+            # 'social_core.pipeline.social_auth.associate_by_email',
 
-              # Associates the current social details with another user account with
-              # a similar email address. Disabled by default.
-              # 'social_core.pipeline.social_auth.associate_by_email',
+            # Create a user account if we haven't found one yet.
+            'social_core.pipeline.user.create_user',
 
-              # Create a user account if we haven't found one yet.
-              'social_core.pipeline.user.create_user',
+            # Create the record that associates the social account with the user.
+            'social_core.pipeline.social_auth.associate_user',
 
-              # Create the record that associates the social account with the user.
-              'social_core.pipeline.social_auth.associate_user',
+            # Populate the extra_data field in the social record with the values
+            # specified by settings (and the default ones like access_token, etc).
+            'social_core.pipeline.social_auth.load_extra_data',
 
-              # Populate the extra_data field in the social record with the values
-              # specified by settings (and the default ones like access_token, etc).
-              'social_core.pipeline.social_auth.load_extra_data',
+            # Update the user record with any changed info from the auth service.
+            'social_core.pipeline.user.user_details',
 
-              # Update the user record with any changed info from the auth service.
-              'social_core.pipeline.user.user_details',
-
-
-              ###################
-              # Custom pipelines
-              ###################
-              # Set authentik Groups
-              'netbox.secshell_pipeline.add_groups',
-              'netbox.secshell_pipeline.remove_groups',
-              # Set Roles
-              'netbox.secshell_pipeline.set_roles'
-            )
-          ''}
+            ###################
+            # Custom pipelines
+            ###################
+            # Set authentik Groups
+            'netbox.secshell_pipeline.add_groups',
+            'netbox.secshell_pipeline.remove_groups',
+            # Set Roles
+            'netbox.secshell_pipeline.set_roles'
+          )
         '';
       };
-      nginx = {
-        enable = true;
-        virtualHosts."${toString config.secshell.netbox.domain}" = {
-          locations = {
-            "/".proxyPass = "http://127.0.0.1:${toString config.secshell.netbox.internal_port}";
-            "/static/".alias = "${config.services.netbox.dataDir}/static/";
-          };
-          serverName = toString config.secshell.netbox.domain;
-
-          # use ACME DNS-01 challenge
-          useACMEHost = toString config.secshell.netbox.domain;
-          forceSSL = true;
-        };
-      };
-    };
-    security.acme.certs."${toString config.secshell.netbox.domain}" = { };
-
-    # adjust permissions to netbox static directory (so nginx user can read/browse these files)
-    environment.systemPackages = with pkgs; [ acl ];
-    systemd.services.netboxSetAcls = {
-      script = ''
-        # Set ACLs recursively for all files and directories under the NetBox data directory
-        ${pkgs.acl}/bin/setfacl -m 'u:${config.services.nginx.user}:rx' ${config.services.netbox.dataDir}
-        find ${config.services.netbox.dataDir}/static -type  d -exec ${pkgs.acl}/bin/setfacl -m 'u:${config.services.nginx.user}:rx' {} +   # world readeable
-        find ${config.services.netbox.dataDir}/static -type f -exec ${pkgs.acl}/bin/setfacl -m 'u:${config.services.nginx.user}:r' {} +    # world readeable
-      '';
-      wantedBy = [ "multi-user.target" ];
-    };
-  };
+    })
+  ]);
 }
