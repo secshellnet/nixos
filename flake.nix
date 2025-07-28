@@ -17,7 +17,7 @@
             ./modules/netbox/default.nix
             ./modules/nexus.nix
             ./modules/paperless.nix
-            ./modules/peering-manager.nix
+            ./modules/peering-manager
             ./modules/privatebin.nix
             ./modules/radicale.nix
             ./modules/simple-upload.nix
