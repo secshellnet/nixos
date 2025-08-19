@@ -55,7 +55,7 @@ in
     };
   };
 
-  config = mkIf (config.secshell.gitea.enable && cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     # base
     {
       sops = {
