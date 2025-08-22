@@ -145,6 +145,7 @@ in
       prometheus-sd = mkEnableOption "netbox prometheus-sd plugin";
       kea = mkEnableOption "netbox kea plugin";
       attachments = mkEnableOption "netbox attachments plugin";
+      contextmenus = mkEnableOption "netbox contextmenus plugin";
     };
   };
 
@@ -214,6 +215,7 @@ in
           (mkIf cfg.plugin.prometheus-sd "netbox_prometheus_sd")
           #(mkIf cfg.plugin.kea "netbox_kea")
           (mkIf cfg.plugin.attachments "netbox_attachments")
+          (mkIf cfg.plugin.contextmenus "netbox_contextmenus")
         ];
         extraConfig = mkIf cfg.plugin.napalm.enable ''
           PLUGINS_CONFIG = {}
@@ -227,9 +229,9 @@ in
         '';
         plugins =
           ps:
-          #let
-          #  plugins = ps.callPackage ./plugins { };
-          #in
+          let
+            plugins = ps.callPackage ./plugins { };
+          in
           [
             #(mkIf cfg.plugin.bgp ps.netbox-bgp)
             (mkIf cfg.plugin.bgp (
@@ -338,6 +340,7 @@ in
                 };
               })
             ))
+            (mkIf cfg.plugin.contextmenus plugins.netbox-contextmenus)
           ];
       };
     }
