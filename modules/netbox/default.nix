@@ -146,6 +146,7 @@ in
       kea = mkEnableOption "netbox kea plugin";
       attachments = mkEnableOption "netbox attachments plugin";
       contextmenus = mkEnableOption "netbox contextmenus plugin";
+      routing = mkEnableOption "netbox routing plugin";
     };
   };
 
@@ -216,6 +217,7 @@ in
           #(mkIf cfg.plugin.kea "netbox_kea")
           (mkIf cfg.plugin.attachments "netbox_attachments")
           (mkIf cfg.plugin.contextmenus "netbox_contextmenus")
+          (mkIf cfg.plugin.routing "netbox_routing")
         ];
         extraConfig = mkIf cfg.plugin.napalm.enable ''
           PLUGINS_CONFIG = {}
@@ -341,6 +343,7 @@ in
               })
             ))
             (mkIf cfg.plugin.contextmenus plugins.netbox-contextmenus)
+            (mkIf cfg.plugin.routing ps.netbox-routing)
           ];
       };
     }
