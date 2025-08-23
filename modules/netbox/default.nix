@@ -151,6 +151,18 @@ in
   };
 
   config = mkIf cfg.enable (mkMerge [
+    {
+      assertions = [
+        {
+          # see https://github.com/DanSheps/netbox-routing/issues/104
+          assertion = !(cfg.plugin.bgp && cfg.plugin.routing);
+          message = ''
+            The plugins `netbox-bgp` and `netbox-routing` are incompatible.
+            Please disable one of them via `secshell.netbox.plugin.routing` or `secshell.netbox.plugin.bgp`.
+          '';
+        }
+      ];
+    }
     # base
     {
       sops.secrets."netbox/secretKey".owner = "netbox";
