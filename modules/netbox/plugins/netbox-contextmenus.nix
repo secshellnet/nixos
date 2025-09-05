@@ -3,8 +3,6 @@
   buildPythonPackage,
   fetchFromGitHub,
   setuptools,
-  netbox,
-  python,
 }:
 
 buildPythonPackage rec {
