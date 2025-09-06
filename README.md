@@ -1,3 +1,3 @@
-# Secure Shell Networks: Nix flake for servers
+# nixos-servers
 
-This repository provides nix configurations for servers managed by Secure Shell Networks.
+This repository provides NixOS modules and functions for use across various projects maintained by Secure Shell Networks.
