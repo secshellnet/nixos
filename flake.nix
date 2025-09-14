@@ -35,6 +35,14 @@
             ./modules/acme.nix
             ./modules/postgres.nix
             ./modules/user.nix
+
+            # Deprecation
+            {
+              warnings = ''
+                Deprecation Warning: The nixos-servers flake repository will be removed on 2025-12-31.
+                Feel free to fork the whole repository or copy the required modules into your own flake.
+              '';
+            }
           ];
         };
       };
